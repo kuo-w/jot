@@ -6,16 +6,21 @@ export default function AuthLoadingScreen(props) {
   useEffect(() => {
     firebase.auth().onAuthStateChanged(user => {
       if (user != null) {
-        console.log("Firebase user did auth");
+        console.info("Firebase user did auth");
       }
       props.navigation.navigate(user ? "App" : "Auth");
     });
   }, []);
 
   return (
-    <View>
+    <View
+      style={{
+        backgroundColor: "black",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
       <StatusBar hidden={true} />
-      <ActivityIndicator />
+      <ActivityIndicator size="large" color="#333" />
     </View>
   );
 }

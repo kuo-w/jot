@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import firebase from "firebase";
 import {
   StyleSheet,
   StatusBar,
@@ -7,7 +6,8 @@ import {
   View,
   findNodeHandle,
   TouchableOpacity,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Text
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
