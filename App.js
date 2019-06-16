@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import { rootReducer } from "./src/reducers";
+import rootReducer from "./src/reducers";
 
 import AppNavigator from "./src/containers/AppNavigator";
 import AuthLoadingScreen from "./src/containers/AuthLoadingScreen";
@@ -15,6 +15,7 @@ import "@firebase/firestore";
 import { FIREBASE_CONFIG } from "./config.js";
 
 firebase.initializeApp(FIREBASE_CONFIG);
+// firebase.firestore().enablePersistence()
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
 

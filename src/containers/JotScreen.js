@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import {
   StyleSheet,
   StatusBar,
@@ -6,13 +7,16 @@ import {
   View,
   findNodeHandle,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Text
+  TouchableWithoutFeedback
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
+import { jotSubmit } from "../actions/jots";
+// import { ToastAndroid } from "react-native";
+// import { BlurView } from "expo";
 
 export default function JotScreen() {
+  const dispatch = useDispatch();
   const [inputText, setInputText] = useState("");
   const [scrollRef, setScrollRef] = useState(null);
   const [textInputRef, setTextInputRef] = useState(null);
@@ -25,7 +29,11 @@ export default function JotScreen() {
     textInputRef.focus();
   };
 
-  const submitJot = () => {};
+  const submitJot = () => {
+    if (inputText == "") return;
+    dispatch(jotSubmit(inputText));
+    setInputText("");
+  };
 
   return (
     <TouchableWithoutFeedback onPress={focusTextInput}>
@@ -44,7 +52,8 @@ export default function JotScreen() {
             right: 20,
             height: 70,
             backgroundColor: "#333",
-            borderRadius: 100
+            borderRadius: 100,
+            zIndex: 1
           }}>
           <Ionicons name="md-checkmark" size={30} color="white" />
         </TouchableOpacity>
@@ -58,6 +67,7 @@ export default function JotScreen() {
                 setTextInputRef(ref);
               }}
               style={styles.textInput}
+              placeholderTextColor="#888"
               placeholder={"Start here."}
               onFocus={event => {
                 _scrollToInput(findNodeHandle(event.target));
@@ -77,10 +87,12 @@ export default function JotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black"
+    backgroundColor: "black",
+    paddingHorizontal: 20,
+    paddingTop: 20
   },
   textInput: {
-    color: "#eee",
+    color: "#bbb",
     fontSize: 20
   }
 });
