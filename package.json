@@ -16,6 +16,7 @@
     "react-kawaii": "^0.14.4",
     "react-native": "https://github.com/expo/react-native/archive/sdk-33.0.0.tar.gz",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
+    "react-native-svg": "^9.13.6",
     "react-native-web": "^0.11.4",
     "react-navigation": "^3.11.0",
     "react-redux": "^7.1.0",

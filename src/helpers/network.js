@@ -1,6 +1,7 @@
 import { NetInfo } from "react-native";
 import store from "../store.js";
 import { setConnected } from "../actions/network.js";
+import { jotGetAll } from "../actions/jots.js";
 
 export default () => {
   // TODO handle network change to try reconnect previous existing auth
@@ -23,6 +24,7 @@ export default () => {
   NetInfo.getConnectionInfo().then(connectionInfo => {
     setConnectivity(connectionInfo);
   });
+
   function handleConnectivityChange(connectionInfo) {
     setConnectivity(connectionInfo);
   }

@@ -10,8 +10,11 @@ export default function AuthLoadingScreen(props) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(jotGetAll());
+    if (isConnected === null) {
+      return;
+    }
     if (!isConnected) {
+      dispatch(jotGetAll());
       props.navigation.navigate("App");
       return;
     }
@@ -21,12 +24,13 @@ export default function AuthLoadingScreen(props) {
     }
     const unsubscribe = firebase.auth().onAuthStateChanged(user => {
       if (user) {
+        dispatch(jotGetAll());
       }
       props.navigation.navigate(user ? "App" : "Auth");
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isConnected]);
 
   return (
     <View
