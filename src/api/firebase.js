@@ -74,8 +74,9 @@ const getJots = async () => {
   }
 };
 
-const setJot = async jot => {
+const setJot = async newJot => {
   try {
+    let jot = Object.assign({}, newJot);
     jot.createdAt = _date(jot.createdAt);
     jot.userid = _uid();
     await _firestore()

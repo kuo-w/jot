@@ -2,7 +2,7 @@ import { SET_CONNECTED } from "../actions/network";
 
 export default (
   state = {
-    isConnected: false
+    isConnected: null
   },
   action
 ) => {
