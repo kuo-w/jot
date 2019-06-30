@@ -1,6 +1,6 @@
 import { JOT_NEW, JOT_ADD_ITEMS } from "../actions/jots";
 
-const jots = (
+export default (
   state = {
     items: []
   },
@@ -19,5 +19,3 @@ const jots = (
       return state;
   }
 };
-
-export default jots;

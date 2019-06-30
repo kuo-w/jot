@@ -1,4 +1,4 @@
-import { setJot, getJots } from "../api/firebase.js";
+import { saveJot, getJots, syncJots } from "../api/jots.js";
 
 export const JOT_SUBMIT = "JOT_SUBMIT";
 export const JOT_NEW = "JOT_NEW";
@@ -19,8 +19,10 @@ const jotAddItems = jots => {
 };
 
 export const jotGetAll = () => {
+  // add loading action
   return async dispatch => {
     try {
+      await syncJots();
       const jots = await getJots();
       dispatch(jotAddItems(jots));
     } catch (error) {
@@ -37,9 +39,11 @@ export const jotSubmit = text => {
     };
     dispatch(jotNew(newJot));
     try {
-      await setJot(newJot);
+      await saveJot(newJot);
       return;
     } catch (error) {
+      console.error(error);
+
       // TODO: add another action to handle failure
       // something like
       // > store failed text

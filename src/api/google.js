@@ -7,10 +7,20 @@ export const signin = async () => {
       GOOGLE_CONFIG
     );
     if (type === "success") {
-      return { accessToken, idToken, user };
+      return { idToken, accessToken, user };
     }
-    throw `Google sign in failed with type ${type}`;
+    return null;
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+};
+
+export const logout = async accessToken => {
+  try {
+    await Google.logOutAsync({ accessToken, ...GOOGLE_CONFIG });
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };

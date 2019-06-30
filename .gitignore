@@ -9,4 +9,5 @@ npm-debug.*
 web-build/
 web-report/
 
-config.js
+credentials.js
+app.json

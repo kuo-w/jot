@@ -1,6 +1,7 @@
 import { combineReducers } from "redux";
 
-import login from "./login.js";
+import auth from "./auth.js";
 import jots from "./jots.js";
+import network from "./network.js";
 
-export default combineReducers({ login, jots });
+export default combineReducers({ auth, jots, network });

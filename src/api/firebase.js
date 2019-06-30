@@ -1,7 +1,26 @@
 import firebase from "firebase";
 import "@firebase/firestore";
 
-const _uid = () => firebase.auth().currentUser.uid;
+const _uid = () => {
+  try {
+    return firebase.auth().currentUser.uid;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+const _firestore = (() => {
+  let instance;
+  const getInstance = () => {
+    if (!instance) {
+      window = undefined; // network error otherwise > https://github.com/firebase/firebase-js-sdk/issues/1824
+      instance = firebase.firestore();
+    }
+    return instance;
+  };
+  return getInstance;
+})();
 
 const _date = date => {
   return firebase.firestore.Timestamp.fromDate(date);
@@ -13,7 +32,6 @@ const auth = async (idToken, accessToken) => {
       idToken,
       accessToken
     );
-    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     const result = await firebase.auth().signInWithCredential(credential);
     return result;
   } catch (error) {
@@ -24,9 +42,7 @@ const auth = async (idToken, accessToken) => {
 
 const setUser = async user => {
   try {
-    window = undefined; // network error otherwise > https://github.com/firebase/firebase-js-sdk/issues/1824
-    await firebase
-      .firestore()
+    await _firestore()
       .collection("/users")
       .doc(_uid())
       .set(user);
@@ -38,8 +54,7 @@ const setUser = async user => {
 
 const getJots = async () => {
   try {
-    const querySnapshot = await firebase
-      .firestore()
+    const querySnapshot = await _firestore()
       .collection("/jots")
       .where("userid", "==", _uid())
       .get();
@@ -59,13 +74,11 @@ const getJots = async () => {
   }
 };
 
-const setJot = async newJot => {
-  const jot = Object.assign({}, newJot);
-  jot.createdAt = _date(jot.createdAt);
-  jot.userid = _uid();
+const setJot = async jot => {
   try {
-    await firebase
-      .firestore()
+    jot.createdAt = _date(jot.createdAt);
+    jot.userid = _uid();
+    await _firestore()
       .collection("/jots")
       .add(jot);
     return jot;

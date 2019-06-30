@@ -21,7 +21,13 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.kuo.jot"
+      "package": "com.kuo.jot",
+      "config": {
+        "googleSignIn": {
+          "apiKey": "",
+          "certificateHash": ""
+        }
+      }
     }
   }
 }

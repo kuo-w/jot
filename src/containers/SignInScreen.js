@@ -1,19 +1,19 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { View, StatusBar, Text } from "react-native";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { login } from "../actions/login.js";
+import { login } from "../actions/auth.js";
 
 export default function SignInScreen(props) {
-  const signinError = useSelector(state => state.login.error);
+  const signinError = useSelector(state => state.auth.error);
+  const signinFetching = useSelector(state => state.auth.fetching);
   const dispatch = useDispatch();
 
   const signinAsync = async () => {
-    try {
-      await dispatch(login());
+    if (signinFetching) return;
+    const success = await dispatch(login());
+    if (success) {
       props.navigation.navigate("App");
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -25,9 +25,20 @@ export default function SignInScreen(props) {
         justifyContent: "center",
         backgroundColor: "black"
       }}>
-      <StatusBar hidden={true} />
       {signinError ? (
-        <Text style={{ color: "#eee" }}>Failed to login</Text>
+        <>
+          <Text style={{ color: "#eee", marginBottom: 20 }}>
+            Failed to login
+          </Text>
+          <Ionicons.Button
+            name="md-refresh"
+            onPress={signinAsync}
+            iconStyle={{ margin: 10 }}
+            color="#eee"
+            backgroundColor="#ba2d65">
+            Retry
+          </Ionicons.Button>
+        </>
       ) : (
         <Ionicons.Button
           name="logo-google"
