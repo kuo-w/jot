@@ -1,4 +1,4 @@
-import { NetInfo } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
 import store from "../store.js";
 import { setConnected } from "../actions/network.js";
 import { jotGetAll } from "../actions/jots.js";
