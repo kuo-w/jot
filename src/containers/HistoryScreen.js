@@ -6,11 +6,16 @@ import { Ghost } from "react-kawaii/lib/native/";
 export default function HistoryScreen() {
   const jots = useSelector(state => state.jots.items);
 
+  // TODO: delete feature
+  // Set jot structure to have flag :active
+  // Then, when getting jots filter active jots only
+
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
       {jots.length == 0 ? (
         <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <Ghost size={250} mood="sad" color="#E0E4E8" />
           <Text style={[styles.text, { marginTop: 20 }]}>
             Nothing to see here.
@@ -30,7 +35,8 @@ export default function HistoryScreen() {
                     backgroundColor: "#333",
                     alignSelf: "stretch",
                     borderRadius: 5
-                  }}>
+                  }}
+                >
                   <Text style={styles.dateText}>
                     {item.createdAt.toDateString()}
                   </Text>

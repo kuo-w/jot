@@ -1,49 +1,66 @@
-import { saveJot, getJots, syncJots } from "../api/jots.js";
+import {
+  saveJot,
+  syncJots,
+  getLocalJots,
+  clearLocalJots
+} from "../api/jots.js";
 
-export const JOT_SUBMIT = "JOT_SUBMIT";
 export const JOT_NEW = "JOT_NEW";
-export const JOT_ADD_ITEMS = "JOT_ADD_ITEMS";
+export const JOT_SET_ITEMS = "JOT_SET_ITEMS";
+export const JOT_CLEAR_LOCAL = "JOT_CLEAR_LOCAL";
 
-const jotNew = jot => {
+// Action on entry submit to push new jot to top of history
+const _pushToHistory = jot => {
   return {
     type: JOT_NEW,
     jot
   };
 };
 
-const jotAddItems = jots => {
+// Action to reset history to passed in jots
+const _resetHistory = jots => {
   return {
-    type: JOT_ADD_ITEMS,
+    type: JOT_SET_ITEMS,
     jots
   };
 };
 
+// Action on application load to load jots
 export const jotGetAll = () => {
-  // add loading action
-  return async dispatch => {
-    try {
-      await syncJots();
-      const jots = await getJots();
-      dispatch(jotAddItems(jots));
-    } catch (error) {
-      // dispatch error
+  // TODO: add loading action
+  return async (dispatch, getState) => {
+    const state = getState();
+    let jots;
+    if (state.auth.signedIn && state.network.isConnected) {
+      jots = await syncJots();
+    } else {
+      jots = await getLocalJots();
     }
+    dispatch(_resetHistory(jots));
   };
 };
 
+export const jotClearLocal = () => {
+  clearLocalJots();
+  return {
+    type: JOT_CLEAR_LOCAL
+  };
+};
+
+// Action on entry submit
 export const jotSubmit = text => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
+    let date = new Date();
+    date.setSeconds(0, 0);
     const newJot = {
       text: text,
-      createdAt: new Date()
+      createdAt: date
     };
-    dispatch(jotNew(newJot));
+    dispatch(_pushToHistory(newJot));
     try {
-      await saveJot(newJot);
-      return;
+      await saveJot(newJot, getState().network.isConnected);
     } catch (error) {
       console.error(error);
-
       // TODO: add another action to handle failure
       // something like
       // > store failed text

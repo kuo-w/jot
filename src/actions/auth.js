@@ -1,4 +1,3 @@
-import { Alert } from "react-native";
 import * as firebase from "../api/firebase.js";
 import * as google from "../api/google.js";
 
@@ -8,6 +7,8 @@ export const LOGIN_FAILURE = "LOGIN_FAILURE";
 
 export const LOGOUT_REQUEST = "LOGOUT_REQUEST";
 export const LOGOUT_SUCCESS = "LOGOUT_SUCCESS";
+
+export const USER_IS_SIGNED_IN = "USER_IS_SIGNED_IN";
 
 export const logout = () => {
   return async (dispatch, getState) => {
@@ -57,10 +58,14 @@ export const login = () => {
       await firebase.auth(idToken, accessToken);
       await firebase.setUser(user);
       dispatch(loginSuccess({ accessToken }));
-      return true;
     } catch (error) {
       dispatch(loginFailure(error));
-      return false;
     }
+  };
+};
+
+export const setSignedIn = () => {
+  return {
+    type: USER_IS_SIGNED_IN
   };
 };

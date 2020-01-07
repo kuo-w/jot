@@ -6,7 +6,6 @@ const _uid = () => {
     return firebase.auth().currentUser.uid;
   } catch (error) {
     console.error(error);
-    throw error;
   }
 };
 
@@ -14,7 +13,8 @@ const _firestore = (() => {
   let instance;
   const getInstance = () => {
     if (!instance) {
-      window = undefined; // network error otherwise > https://github.com/firebase/firebase-js-sdk/issues/1824
+      // TODO: follow up on network error caused by https://github.com/firebase/firebase-js-sdk/issues/1824
+      window = undefined;
       instance = firebase.firestore();
     }
     return instance;
@@ -22,7 +22,7 @@ const _firestore = (() => {
   return getInstance;
 })();
 
-const _date = date => {
+const _timestamp = date => {
   return firebase.firestore.Timestamp.fromDate(date);
 };
 
@@ -36,7 +36,6 @@ const auth = async (idToken, accessToken) => {
     return result;
   } catch (error) {
     console.error(error);
-    throw error;
   }
 };
 
@@ -48,7 +47,6 @@ const setUser = async user => {
       .set(user);
   } catch (error) {
     console.error(error);
-    throw error;
   }
 };
 
@@ -62,7 +60,9 @@ const getJots = async () => {
       .map(doc => {
         const data = doc.data();
         return {
-          createdAt: new Date(data.createdAt.seconds * 1000),
+          createdAt: new Date(
+            new Date(data.createdAt.seconds * 1000).setSeconds(0, 0)
+          ),
           text: data.text
         };
       })
@@ -70,14 +70,13 @@ const getJots = async () => {
     return mappedData;
   } catch (error) {
     console.error(error);
-    throw error;
   }
 };
 
 const setJot = async newJot => {
   try {
     let jot = Object.assign({}, newJot);
-    jot.createdAt = _date(jot.createdAt);
+    jot.createdAt = _timestamp(jot.createdAt);
     jot.userid = _uid();
     await _firestore()
       .collection("/jots")
@@ -85,7 +84,21 @@ const setJot = async newJot => {
     return jot;
   } catch (error) {
     console.error(error);
-    throw error;
+    // TODO: handle error
+    // Add queue to retry at a later time
+    // Or rethrow error to show message to user
+  }
+};
+
+const addManyJots = async newItems => {
+  try {
+    let items = [...newItems];
+    items.forEach(i => {
+      i.createdAt = _timestamp(i.createdAt);
+      i.userid = _uid();
+    });
+  } catch (error) {
+    console.error(error);
   }
 };
 
@@ -93,8 +106,7 @@ const logout = async () => {
   try {
     await firebase.auth().signOut();
   } catch (error) {
-    console.warn(error);
-    throw error;
+    console.error(error);
   }
 };
 

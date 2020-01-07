@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,15 +7,24 @@ import { login } from "../actions/auth.js";
 export default function SignInScreen(props) {
   const signinError = useSelector(state => state.auth.error);
   const signinFetching = useSelector(state => state.auth.fetching);
+  const signinSuccess = useSelector(state => state.auth.signedIn);
+
   const dispatch = useDispatch();
 
   const signinAsync = async () => {
     if (signinFetching) return;
-    const success = await dispatch(login());
-    if (success) {
-      props.navigation.navigate("App");
-    }
+    dispatch(login());
   };
+
+  const switchToApp = () => {
+    props.navigation.navigate("App");
+  };
+
+  useEffect(() => {
+    if (signinSuccess) {
+      switchToApp();
+    }
+  });
 
   return (
     <View
@@ -24,7 +33,8 @@ export default function SignInScreen(props) {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "black"
-      }}>
+      }}
+    >
       {signinError ? (
         <>
           <Text style={{ color: "#eee", marginBottom: 20 }}>
@@ -35,7 +45,8 @@ export default function SignInScreen(props) {
             onPress={signinAsync}
             iconStyle={{ margin: 10 }}
             color="#eee"
-            backgroundColor="#ba2d65">
+            backgroundColor="#ba2d65"
+          >
             Retry
           </Ionicons.Button>
         </>
@@ -45,7 +56,8 @@ export default function SignInScreen(props) {
           onPress={signinAsync}
           iconStyle={{ margin: 10 }}
           color="#eee"
-          backgroundColor="#ba2d65">
+          backgroundColor="#ba2d65"
+        >
           Login with Google
         </Ionicons.Button>
       )}

@@ -18,7 +18,7 @@ const getJots = async () => {
     if (jots !== null) {
       jots = JSON.parse(jots);
       jots.forEach(jot => {
-        jot.createdAt = new Date(jot.createdAt);
+        jot.createdAt = new Date(new Date(jot.createdAt).setSeconds(0, 0));
       });
       jots.sort((a, b) => b.createdAt - a.createdAt);
       return jots;
@@ -33,4 +33,12 @@ const removeJots = async () => {
   await AsyncStorage.removeItem(JOTS);
 };
 
-export { setJot, getJots, removeJots };
+const rewriteJots = async items => {
+  try {
+    await AsyncStorage.setItem(JOTS, JSON.stringify(items));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export { setJot, getJots, removeJots, rewriteJots };

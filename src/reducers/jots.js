@@ -1,4 +1,4 @@
-import { JOT_NEW, JOT_ADD_ITEMS } from "../actions/jots";
+import { JOT_NEW, JOT_SET_ITEMS, JOT_CLEAR_LOCAL } from "../actions/jots";
 
 export default (
   state = {
@@ -8,13 +8,11 @@ export default (
 ) => {
   switch (action.type) {
     case JOT_NEW:
-      return Object.assign({}, state, {
-        items: [...state.items, action.jot]
-      });
-    case JOT_ADD_ITEMS:
-      return Object.assign({}, state, {
-        items: [...state.items, ...action.jots]
-      });
+      return { ...state, items: [action.jot, ...state.items] };
+    case JOT_SET_ITEMS:
+      return { ...state, items: action.jots };
+    case JOT_CLEAR_LOCAL:
+      return { ...state, items: [] };
     default:
       return state;
   }

@@ -1,4 +1,4 @@
-import { Google } from "expo";
+import * as Google from "expo-google-app-auth";
 import { GOOGLE_CONFIG } from "../../config.js";
 
 export const signin = async () => {
