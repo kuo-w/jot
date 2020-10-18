@@ -13,13 +13,14 @@
     "expo": "^36.0.0",
     "expo-app-auth": "~8.0.0",
     "expo-google-app-auth": "^8.0.0",
-    "firebase": "^7.1.1",
+    "firebase": "^7.24.0",
     "react": "16.9.0",
     "react-dom": "16.9.0",
     "react-kawaii": "^0.14.4",
     "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.1.tar.gz",
     "react-native-gesture-handler": "~1.5.0",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
+    "react-native-screens": "^2.11.0",
     "react-native-svg": "9.13.3",
     "react-native-web": "^0.11.7",
     "react-navigation": "^3.11.0",
@@ -28,8 +29,18 @@
     "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
-    "babel-preset-expo": "^7.0.0",
-    "metro-react-native-babel-preset": "^0.54.1"
+    "@babel/preset-typescript": "^7.12.1",
+    "@types/jest": "^26.0.14",
+    "@types/react": "^16.9.53",
+    "@types/react-native": "^0.63.25",
+    "@types/react-test-renderer": "^16.9.3",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "babel-preset-expo": "^8.0.0",
+    "eslint": "^7.11.0",
+    "eslint-plugin-react": "^7.21.4",
+    "metro-react-native-babel-preset": "^0.54.1",
+    "typescript": "^4.0.3"
   },
   "private": true
 }
