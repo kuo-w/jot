@@ -1,7 +1,8 @@
-import * as firebase from "firebase";
+import firebase from "firebase";
 import "firebase/firestore";
-import { FIREBASE_CONFIG_CREDENTIALS } from "../credentials.js";
+import { FIREBASE_CONFIG_CREDENTIALS } from "../credentials";
 import { v4 as uuidv4 } from "uuid";
+import * as fs from "fs";
 
 /*
  * [oct 20, 2020]
@@ -32,12 +33,14 @@ interface Dto {
 
   let numCompleted = 0;
   let numSkipped = 0;
+  const skippedItems = new Array<Dto>();
 
   const tasks = snapshot.docs.map(
     async (doc: firebase.firestore.DocumentData) => {
       const item = <Dto>doc.data();
       if (item.guid != null) {
         numSkipped++;
+        skippedItems.push(item);
         return;
       }
 
@@ -50,8 +53,13 @@ interface Dto {
 
   await Promise.all(tasks);
 
-  console.info(
-    `\n\nALL DONE\nCOMPLETED ${numCompleted}\nSKIPPED ${numSkipped}`
-  );
+  try {
+    await fs.promises.writeFile("./data.json", JSON.stringify(skippedItems));
+    console.log("SUCCESSFULLY WROTE DATA TO FILES.");
+  } catch (error) {
+    console.error(error);
+  }
+
+  console.info(`\nALL DONE\nCOMPLETED ${numCompleted}\nSKIPPED ${numSkipped}`);
   process.exit();
 })();

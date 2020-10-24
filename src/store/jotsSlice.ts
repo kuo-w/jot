@@ -1,19 +1,19 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import jotApi from "api/jotApi";
-import { RootState } from "store";
+import { RootState } from "store/rootReducer";
 import { Jot } from "types";
 
 export type JotsState = {
-  items: Jot[];
+  jots: Jot[];
   loading: boolean;
   error: string | undefined;
 };
 
 export const save = createAsyncThunk(
   "jots/save",
-  async (data: Jot, thunkApi) => {
+  async (text: string, thunkApi) => {
     try {
-      return await jotApi.save(data);
+      return await jotApi.save(text);
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -29,7 +29,7 @@ export const getall = createAsyncThunk("jots/getall", async (_, thunkApi) => {
 });
 
 const initialState: JotsState = {
-  items: new Array<Jot>(),
+  jots: new Array<Jot>(),
   loading: false,
   error: undefined,
 };
@@ -43,7 +43,7 @@ export const jotsSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(getall.fulfilled, (state, { payload }) => {
-      state.items = payload;
+      state.jots = payload;
       state.loading = false;
     });
     builder.addCase(getall.rejected, (state, { error }) => {
@@ -54,7 +54,7 @@ export const jotsSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(save.fulfilled, (state, { payload }) => {
-      state.items = payload;
+      state.jots = payload;
       state.loading = false;
     });
     builder.addCase(save.rejected, (state, { error }) => {

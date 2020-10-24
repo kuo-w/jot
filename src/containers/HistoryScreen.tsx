@@ -1,14 +1,11 @@
-import React from "react";
+import React, { ReactElement } from "react";
 import { useSelector } from "react-redux";
 import { StyleSheet, View, FlatList, Text } from "react-native";
-import { Ghost } from "react-kawaii/lib/native/";
+import { Ghost } from "react-kawaii/lib/native";
+import { selectJots } from "store/jotsSlice";
 
-export default function HistoryScreen() {
-  const jots = useSelector(state => state.jots.items);
-
-  // TODO: delete feature
-  // Set jot structure to have flag :active
-  // Then, when getting jots filter active jots only
+const HistoryScreen = (): ReactElement => {
+  const { jots } = useSelector(selectJots);
 
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
@@ -34,7 +31,7 @@ export default function HistoryScreen() {
                     flexDirection: "column",
                     backgroundColor: "#333",
                     alignSelf: "stretch",
-                    borderRadius: 5
+                    borderRadius: 5,
                   }}
                 >
                   <Text style={styles.dateText}>
@@ -49,14 +46,16 @@ export default function HistoryScreen() {
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   dateText: {
     color: "#777",
-    marginBottom: 10
+    marginBottom: 10,
   },
   text: {
-    color: "#bbb"
-  }
+    color: "#bbb",
+  },
 });
+
+export default HistoryScreen;

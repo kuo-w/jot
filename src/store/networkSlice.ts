@@ -1,7 +1,8 @@
 import { NetInfoState } from "@react-native-community/netinfo";
 import { createSlice, createAsyncThunk, createAction } from "@reduxjs/toolkit";
 import * as networkApi from "api/networkApi";
-import { store } from "store/rootReducer";
+import { RootState, store } from "store/rootReducer";
+
 /* 
 https://docs.expo.io/versions/v39.0.0/sdk/netinfo/
 https://github.com/react-native-netinfo/react-native-netinfo#netinfostate
@@ -30,7 +31,7 @@ const initialState: NetworkState = {
   loading: false,
 };
 
-createSlice({
+const networkSlice = createSlice({
   name: "network",
   initialState,
   reducers: {},
@@ -44,3 +45,7 @@ createSlice({
     });
   },
 });
+
+export const selectNetwork = (state: RootState): NetworkState => state.network;
+
+export default networkSlice.reducer;

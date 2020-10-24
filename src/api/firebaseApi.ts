@@ -99,4 +99,4 @@ const logout = async (): Promise<void> => {
   }
 };
 
-export { auth, setUser, logout, setJot, getJots };
+export default { auth, setUser, logout, setJot, getJots };

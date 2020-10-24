@@ -10,7 +10,8 @@
     "noEmit": true,
     "strict": true,
     "target": "esnext",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "module": "commonjs"
   },
   "exclude": [
     "node_modules",

@@ -1,6 +1,7 @@
-import { Jot } from "types.js";
-import * as firebase from "./firebaseApi.js";
-import storage, { StorageKey } from "./storageApi.js";
+import { Jot } from "types";
+import firebase from "./firebaseApi";
+import storage, { StorageKey } from "./storageApi";
+import { v4 as uuidv4 } from "uuid";
 
 const _getUniqueByGuid = (items: Jot[]): Jot[] => {
   const uniqueGuids = new Set<string>();
@@ -68,10 +69,16 @@ const getall = async (): Promise<Jot[]> => {
   return await _syncWithConnected();
 };
 
-const save = async (jot: Jot): Promise<Jot[]> => {
+const save = async (text: string): Promise<Jot[]> => {
+  const item: Jot = {
+    text,
+    createdAt: new Date(),
+    guid: uuidv4(),
+  };
+
   const tasks = new Array<Promise<void | Jot[]>>();
-  tasks.push(storage.pushItem<Jot>(StorageKey.JOTS, jot));
-  tasks.push(firebase.setJot(jot));
+  tasks.push(storage.pushItem<Jot>(StorageKey.JOTS, item));
+  tasks.push(firebase.setJot(item));
 
   const result = await Promise.all(tasks);
   return <Jot[]>result[0];

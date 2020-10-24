@@ -1,7 +1,6 @@
 import * as Google from "expo-google-app-auth";
 import { LogInResult } from "expo-google-app-auth/src/Google";
 import { GOOGLE_CONFIG } from "../../config.js";
-import { login } from "../store/auth/action.js";
 
 export interface LoginResult {
   idToken: string;

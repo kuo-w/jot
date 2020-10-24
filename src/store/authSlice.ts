@@ -1,37 +1,49 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import * as firebase from "api/firebaseApi.js";
-import * as google from "api/googleApi.js";
+import { createAsyncThunk, createSlice, createAction } from "@reduxjs/toolkit";
+import firebase from "api/firebaseApi";
+import * as google from "api/googleApi";
 import { RootState } from "store/rootReducer";
 
 export type AuthState = {
-  accessToken: string | null;
+  accessToken: string | undefined;
   fetching: boolean;
   error: string | undefined;
   signedIn: boolean;
 };
 
+export type ThirdPartyAuthType = "Google";
+
+export const setSignedIn = createAction("auth/setSignedIn");
+
 const initialState: AuthState = {
-  accessToken: null,
+  accessToken: undefined,
   fetching: false,
   error: undefined,
   signedIn: false,
 };
 
-export const login = createAsyncThunk("auth/login", async (_, thunkApi) => {
-  const oauthResult = await google.signin();
-  if (oauthResult == null) {
-    return thunkApi.rejectWithValue(new Error("Google signin failed."));
-  }
+export const thirdPartyLogin = createAsyncThunk(
+  "auth/login",
+  async (option: ThirdPartyAuthType, thunkApi) => {
+    // Currently only using Google.
+    if (option != "Google") {
+      return;
+    }
 
-  try {
-    const { idToken, accessToken, user } = oauthResult;
-    await firebase.auth(idToken, accessToken);
-    await firebase.setUser(user);
-    return { accessToken };
-  } catch (error) {
-    return thunkApi.rejectWithValue(error);
+    const oauthResult = await google.signin();
+    if (oauthResult == null) {
+      return thunkApi.rejectWithValue(new Error("Google signin failed."));
+    }
+
+    try {
+      const { idToken, accessToken, user } = oauthResult;
+      await firebase.auth(idToken, accessToken);
+      await firebase.setUser(user);
+      return accessToken;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
   }
-});
+);
 
 export const logout = createAsyncThunk<
   undefined,
@@ -56,16 +68,17 @@ export const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(login.pending, (state) => {
+    builder.addCase(thirdPartyLogin.pending, (state) => {
       state.fetching = true;
       state.error = undefined;
     });
-    builder.addCase(login.fulfilled, (state) => {
+    builder.addCase(thirdPartyLogin.fulfilled, (state, { payload }) => {
       state.signedIn = true;
       state.fetching = false;
       state.error = undefined;
+      state.accessToken = payload;
     });
-    builder.addCase(login.rejected, (state, { error }) => {
+    builder.addCase(thirdPartyLogin.rejected, (state, { error }) => {
       state.fetching = false;
       state.error = error.message;
     });
@@ -76,11 +89,16 @@ export const authSlice = createSlice({
     builder.addCase(logout.fulfilled, (state) => {
       state.signedIn = false;
       state.fetching = false;
+      state.accessToken = undefined;
     });
     builder.addCase(logout.rejected, (state, { error }) => {
       state.signedIn = false;
       state.fetching = false;
       state.error = error.message;
+      state.accessToken = undefined;
+    });
+    builder.addCase(setSignedIn, (state) => {
+      state.signedIn = true;
     });
   },
 });

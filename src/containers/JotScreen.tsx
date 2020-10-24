@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactElement, ReactNode, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   StyleSheet,
@@ -7,31 +7,34 @@ import {
   View,
   findNodeHandle,
   TouchableOpacity,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
-import { jotSubmit } from "../actions/jots";
-// import { ToastAndroid } from "react-native";
-// import { BlurView } from "expo";
+import { ScrollView } from "types";
+import * as jotActions from "store/jotsSlice";
 
-export default function JotScreen() {
+const JotScreen = (): ReactElement => {
   const dispatch = useDispatch();
   const [inputText, setInputText] = useState("");
-  const [scrollRef, setScrollRef] = useState(null);
-  const [textInputRef, setTextInputRef] = useState(null);
+  const [scrollRef, setScrollRef] = useState<ScrollView | null>(null);
+  const [textInputRef, setTextInputRef] = useState<TextInput | null>(null);
 
-  const _scrollToInput = reactNode => {
-    scrollRef.props.scrollToFocusedInput(reactNode);
+  const _scrollToInput = (reactNode: ReactNode) => {
+    if (scrollRef) {
+      scrollRef.props.scrollToFocusedInput(reactNode);
+    }
   };
 
   const focusTextInput = () => {
-    textInputRef.focus();
+    if (textInputRef) {
+      textInputRef.focus();
+    }
   };
 
   const submitJot = () => {
     if (inputText == "") return;
-    dispatch(jotSubmit(inputText));
+    dispatch(jotActions.save(inputText));
     setInputText("");
   };
 
@@ -53,26 +56,28 @@ export default function JotScreen() {
             height: 70,
             backgroundColor: "#333",
             borderRadius: 100,
-            zIndex: 1
-          }}>
+            zIndex: 1,
+          }}
+        >
           <Ionicons name="md-checkmark" size={30} color="white" />
         </TouchableOpacity>
         <KeyboardAwareScrollView
-          innerRef={ref => {
+          innerRef={(ref) => {
             setScrollRef(ref);
-          }}>
+          }}
+        >
           <View>
             <TextInput
-              ref={ref => {
+              ref={(ref) => {
                 setTextInputRef(ref);
               }}
               style={styles.textInput}
               placeholderTextColor="#888"
               placeholder={"Start here."}
-              onFocus={event => {
+              onFocus={(event) => {
                 _scrollToInput(findNodeHandle(event.target));
               }}
-              onChangeText={text => setInputText(text)}
+              onChangeText={(text) => setInputText(text)}
               textAlignVertical={"top"}
               multiline={true}
               value={inputText}
@@ -82,17 +87,19 @@ export default function JotScreen() {
       </View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
     paddingHorizontal: 20,
-    paddingTop: 20
+    paddingTop: 20,
   },
   textInput: {
     color: "#bbb",
-    fontSize: 20
-  }
+    fontSize: 20,
+  },
 });
+
+export default JotScreen;

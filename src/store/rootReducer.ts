@@ -3,11 +3,13 @@ import { useDispatch } from "react-redux";
 
 import authReducer from "store/authSlice";
 import jotsReducer from "store/jotsSlice";
+import networkReducer from "store/networkSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     jots: jotsReducer,
+    network: networkReducer,
   },
 });
 
