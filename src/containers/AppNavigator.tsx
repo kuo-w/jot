@@ -1,39 +1,23 @@
-import React, { ReactElement } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import JotScreen from "./JotScreen";
-import HistoryScreen from "./HistoryScreen";
-import SettingsScreen from "./SettingsScreen";
-import { AppNavigatorParamList } from "types";
+import React, { ReactElement, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
-const Tab = createBottomTabNavigator<AppNavigatorParamList>();
-Tab.Navigator.displayName = "BottomTabNavigator";
-Tab.Navigator.defaultProps = {
-  tabBarOptions: {
-    showLabel: false,
-    activeTintColor: "#c2185b",
-    inactiveTintColor: "gray",
-    style: {
-      backgroundColor: "#010101",
-    },
-  },
-  screenOptions: ({ route }) => ({
-    tabBarIcon: ({ color }) => {
-      const icons: { [routeName: string]: string } = {
-        Jot: "md-create",
-        History: "md-time",
-        Settings: "md-cog",
-      };
+import JotScreen from "@containers/JotScreen";
+import HistoryScreen from "@containers/HistoryScreen";
+import SettingsScreen from "@containers/SettingsScreen";
+import Tab from "@containers/AppBottomTabNavigator";
 
-      const Icon = (
-        <Ionicons name={icons[route.name]} size={25} color={color} />
-      );
-      return Icon;
-    },
-  }),
-};
+import { checkUserAuth } from "@store/authSlice";
+import { getall } from "@store/jotsSlice";
 
-const Navigator = (): ReactElement => {
+const AppNavigator = (): ReactElement => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log("APP NAV::DISPATCH CHECKAUTH EFFECT");
+    dispatch(checkUserAuth());
+    dispatch(getall());
+  }, []);
+
   return (
     <Tab.Navigator>
       <Tab.Screen name="Jot" component={JotScreen} />
@@ -43,4 +27,4 @@ const Navigator = (): ReactElement => {
   );
 };
 
-export default Navigator;
+export default AppNavigator;

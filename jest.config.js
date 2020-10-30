@@ -1,16 +1,14 @@
 module.exports = {
-  // [...]
-  // Replace `ts-jest` with the preset you want to use
-  // from the above list
+  preset: "react-native",
   globals: {
     "ts-jest": {
       tsconfig: "tsconfig.json",
     },
   },
+  setupFiles: ["<rootDir>/jest.setup.js"],
   testEnvironment: "node",
-  preset: "ts-jest/presets/js-with-ts",
-  modulePaths: [
-    // Add your paths here
-    "<rootDir>/src/",
-  ],
+  modulePaths: ["<rootDir>/src/"],
+  transform: { "\\.ts$": ["ts-jest"] },
+  testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 };

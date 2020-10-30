@@ -1,13 +1,16 @@
-import React, { ReactElement, useEffect } from "react";
+import React, { ReactElement } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAuth } from "store/authSlice";
-import * as jotActions from "store/jotsSlice";
 import { View, StyleSheet } from "react-native";
-import SettingsOptionButton from "components/Settings/SettingsOptionButton";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { AppNavigatorParamList, RootStackParamList } from "types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { CompositeNavigationProp } from "@react-navigation/native";
+
+import { logout, selectAuth } from "@store/authSlice";
+import SettingsOptionButton from "@components/Settings/SettingsOptionButton";
+import storageApi, { StorageKey } from "@api/storageApi";
+import { clearLocally, getall } from "@store/jotsSlice";
+import firebase from "firebase";
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<AppNavigatorParamList, "Settings">,
@@ -22,26 +25,23 @@ const SettingsScreen = ({ navigation }: Props): ReactElement => {
   const { signedIn } = useSelector(selectAuth);
   const dispatch = useDispatch();
 
-  const navigateToSignInOptionsScreen = () => {
-    navigation.navigate("SignInOptions");
-  };
-
-  useEffect(() => {
-    if (signedIn) {
-      dispatch(jotActions.getall());
-    }
-  }, [signedIn, dispatch]);
-
   return (
     <View style={styles.container}>
-      <View style={{ width: "70%", margin: 50 }}>
-        {signedIn && (
-          <SettingsOptionButton
-            title="See Sign-in Options"
-            onPressAction={navigateToSignInOptionsScreen}
-          ></SettingsOptionButton>
-        )}
-      </View>
+      <SettingsOptionButton
+        title={!signedIn ? "Sign-in" : "Logout"}
+        onPressAction={
+          !signedIn
+            ? () => navigation.navigate("SignInOptions")
+            : () => {
+                console.log("SETTINGSCREEN::LOGOUT");
+                dispatch(logout());
+              }
+        }
+      ></SettingsOptionButton>
+      <SettingsOptionButton
+        title="Clear Local Data"
+        onPressAction={() => dispatch(clearLocally())}
+      ></SettingsOptionButton>
     </View>
   );
 };
@@ -49,9 +49,8 @@ const SettingsScreen = ({ navigation }: Props): ReactElement => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    backgroundColor: "black",
-    paddingHorizontal: 15,
+    width: "80%",
+    alignSelf: "center",
   },
 });
 

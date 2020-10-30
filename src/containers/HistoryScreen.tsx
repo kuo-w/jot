@@ -1,61 +1,70 @@
-import React, { ReactElement } from "react";
+import React, {
+  ReactElement,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
-import { StyleSheet, View, FlatList, Text } from "react-native";
-import { Ghost } from "react-kawaii/lib/native";
+import { TextInput, View } from "react-native";
 import { selectJots } from "store/jotsSlice";
+import HistoryEmpty from "@components/History/HistoryEmpty";
+import HistoryList from "@components/History/HistoryList";
+import { appBgColor } from "colors";
+import HistoryTopBar from "@components/History/HistoryTopBar";
+import useFuzzySearch from "hooks/useFuzzySearch";
+import { AppNavigatorParamList } from "types";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
-const HistoryScreen = (): ReactElement => {
+type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "History">;
+
+type Props = {
+  navigation: NavigationProp;
+};
+
+const HistoryScreen = ({ navigation }: Props): ReactElement => {
+  const searchBarTextInput: React.RefObject<TextInput> = useRef(null);
   const { jots } = useSelector(selectJots);
+  const fuzzySearch = useFuzzySearch(jots, "text", "guid");
+  const [includeItemIds, setIncludeItemIds] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    const blurListener = navigation.addListener("blur", () => {
+      searchBarTextInput.current?.clear();
+      setIncludeItemIds(null);
+    });
+
+    return blurListener;
+  }, [navigation]);
+
+  const handleSearchText = (text: string) => {
+    const includeIds = fuzzySearch(text);
+    setIncludeItemIds(includeIds);
+  };
+
+  const _filterItems = (itemsToInclude: string[] | null) => {
+    if (!itemsToInclude) {
+      return jots;
+    }
+
+    return jots.filter((j) => itemsToInclude.includes(j.guid));
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "black" }}>
-      {jots.length == 0 ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <Ghost size={250} mood="sad" color="#E0E4E8" />
-          <Text style={[styles.text, { marginTop: 20 }]}>
-            Nothing to see here.
-          </Text>
-        </View>
+    <View style={{ backgroundColor: appBgColor, flex: 1 }}>
+      {jots.length > 0 ? (
+        <>
+          <HistoryTopBar
+            ref={searchBarTextInput}
+            textChangeHandler={handleSearchText}
+          ></HistoryTopBar>
+          <HistoryList items={_filterItems(includeItemIds)}></HistoryList>
+        </>
       ) : (
-        <FlatList
-          data={jots}
-          keyExtractor={(_, index) => `${index}`}
-          renderItem={({ item }) => {
-            return (
-              <View style={{ padding: 20 }}>
-                <View
-                  style={{
-                    padding: 30,
-                    flexDirection: "column",
-                    backgroundColor: "#333",
-                    alignSelf: "stretch",
-                    borderRadius: 5,
-                  }}
-                >
-                  <Text style={styles.dateText}>
-                    {item.createdAt.toDateString()}
-                  </Text>
-                  <Text style={styles.text}>{item.text}</Text>
-                </View>
-              </View>
-            );
-          }}
-        />
+        <HistoryEmpty></HistoryEmpty>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  dateText: {
-    color: "#777",
-    marginBottom: 10,
-  },
-  text: {
-    color: "#bbb",
-  },
-});
 
 export default HistoryScreen;

@@ -1,10 +1,11 @@
-import React, { ReactElement, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { View, Text } from "react-native";
-import { selectAuth } from "store/authSlice";
+import React, { ReactElement } from "react";
+import { useDispatch } from "react-redux";
+import { View, Text, StyleSheet } from "react-native";
+import { Login } from "store/authSlice";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { AppNavigatorParamList } from "types";
-import SignInButton from "components/Auth/SignInButton";
+import AuthOptionButton from "@components/Auth/AuthOptionButton";
+import { textSecondaryColor } from "colors";
 
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "SignIn">;
 
@@ -13,35 +14,50 @@ type Props = {
 };
 
 const SignInScreen = ({ navigation }: Props): ReactElement => {
-  const { error, signedIn } = useSelector(selectAuth);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (signedIn && !error) {
-      navigation.navigate("Jot");
-    }
-  }, [signedIn, error]);
+  const navigateHome = () => {
+    console.log("SIGNIN SCREEN::CALLBACK ON LOGIN SUCCESS");
+    navigation.navigate("Jot");
+  };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "black",
-      }}
-    >
-      <>
-        <SignInButton></SignInButton>
-      </>
-      <>
-        {error && (
-          <Text style={{ color: "#eee", marginBottom: 20 }}>
-            Failed to login
-          </Text>
-        )}
-      </>
+    <View style={styles.container}>
+      <Text style={styles.header}>Login</Text>
+      <AuthOptionButton
+        title="Google"
+        onPress={() =>
+          dispatch(Login({ method: "Google", onSuccess: navigateHome }))
+        }
+        iconName="logo-google"
+        color="#eee"
+        bgColor="#ba2d65"
+      ></AuthOptionButton>
+      <AuthOptionButton
+        title="Guest"
+        onPress={() =>
+          dispatch(Login({ method: "Anonymous", onSuccess: navigateHome }))
+        }
+        iconName="md-person"
+        color="#3B3B3B"
+        bgColor="#eee"
+      ></AuthOptionButton>
     </View>
   );
 };
 
+const styles = StyleSheet.create({
+  header: {
+    color: textSecondaryColor,
+    fontSize: 40,
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "black",
+  },
+});
 export default SignInScreen;

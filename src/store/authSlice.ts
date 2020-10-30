@@ -1,65 +1,93 @@
 import { createAsyncThunk, createSlice, createAction } from "@reduxjs/toolkit";
-import firebase from "api/firebaseApi";
-import * as google from "api/googleApi";
-import { RootState } from "store/rootReducer";
+import { RootState } from "@store/index";
+import { ToastAndroid } from "react-native";
+import authApi from "@api/authApi";
+import { AuthOption } from "types";
+import { getall, resetRemoteFetchTime } from "./jotsSlice";
 
-export type AuthState = {
+type AuthState = {
   accessToken: string | undefined;
   fetching: boolean;
   error: string | undefined;
   signedIn: boolean;
+  auth: AuthOption | undefined;
 };
 
-export type ThirdPartyAuthType = "Google";
-
 export const setSignedIn = createAction("auth/setSignedIn");
+
+export const checkUserAuth = createAsyncThunk(
+  "auth/checkUserAuth",
+  async () => {
+    const user = await authApi.getCurrentUser();
+    console.log("AUTH ACTION::HAS USER");
+    console.log(user != null);
+    return user != null;
+  }
+);
 
 const initialState: AuthState = {
   accessToken: undefined,
   fetching: false,
   error: undefined,
   signedIn: false,
+  auth: undefined,
 };
 
-export const thirdPartyLogin = createAsyncThunk(
+export const Login = createAsyncThunk(
   "auth/login",
-  async (option: ThirdPartyAuthType, thunkApi) => {
-    // Currently only using Google.
-    if (option != "Google") {
-      return;
-    }
+  async (
+    { method, onSuccess }: { method: AuthOption; onSuccess: () => void },
+    thunkApi
+  ) => {
+    console.log("AUTH THUNK::LOGIN");
 
-    const oauthResult = await google.signin();
-    if (oauthResult == null) {
-      return thunkApi.rejectWithValue(new Error("Google signin failed."));
-    }
-
+    let result;
     try {
-      const { idToken, accessToken, user } = oauthResult;
-      await firebase.auth(idToken, accessToken);
-      await firebase.setUser(user);
-      return accessToken;
+      if (method === "Google") {
+        result = await authApi.authGoogleLogin();
+      } else if (method === "Anonymous") {
+        result = await authApi.authAnonymousLogin();
+      } else {
+        throw new Error(`Implement auth option: ${method}`);
+      }
     } catch (error) {
+      console.error("AUTH THUNK::LOGIN ERROR");
+      console.error(error);
       return thunkApi.rejectWithValue(error);
     }
+
+    console.log("AUTH THUNK::LOGIN SUCCESSFUL");
+    authApi.actionOnAuth(() => {
+      console.log("AUTH API::IN CALLBACK");
+      onSuccess();
+      thunkApi.dispatch(setSignedIn());
+      thunkApi.dispatch(getall);
+    });
+
+    return result;
   }
 );
 
 export const logout = createAsyncThunk<
-  undefined,
+  void,
   undefined,
   {
     state: RootState;
-    rejectValue: string;
   }
 >("auth/logout", async (_, thunkApi) => {
-  await firebase.logout();
-  const { accessToken } = thunkApi.getState().auth;
-  if (accessToken == null) {
-    return thunkApi.rejectWithValue("Empty accessToken");
-  }
+  thunkApi.dispatch(resetRemoteFetchTime());
 
-  await google.logout(<string>accessToken);
+  try {
+    const { accessToken } = thunkApi.getState().auth;
+    if (accessToken == null) {
+      await authApi.logout();
+      return;
+    }
+    await authApi.logout(accessToken);
+  } catch (error) {
+    thunkApi.rejectWithValue("Failed to signout");
+  }
+  console.log("DONE");
   return;
 });
 
@@ -68,38 +96,38 @@ export const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(thirdPartyLogin.pending, (state) => {
-      state.fetching = true;
-      state.error = undefined;
-    });
-    builder.addCase(thirdPartyLogin.fulfilled, (state, { payload }) => {
-      state.signedIn = true;
-      state.fetching = false;
-      state.error = undefined;
-      state.accessToken = payload;
-    });
-    builder.addCase(thirdPartyLogin.rejected, (state, { error }) => {
-      state.fetching = false;
-      state.error = error.message;
-    });
-    builder.addCase(logout.pending, (state) => {
-      state.signedIn = false;
-      state.fetching = true;
-    });
-    builder.addCase(logout.fulfilled, (state) => {
-      state.signedIn = false;
-      state.fetching = false;
-      state.accessToken = undefined;
-    });
-    builder.addCase(logout.rejected, (state, { error }) => {
-      state.signedIn = false;
-      state.fetching = false;
-      state.error = error.message;
-      state.accessToken = undefined;
-    });
-    builder.addCase(setSignedIn, (state) => {
-      state.signedIn = true;
-    });
+    builder
+      .addCase(Login.pending, (state) => {
+        state.fetching = true;
+        state.error = undefined;
+      })
+      .addCase(Login.fulfilled, (state, { payload }) => {
+        state.signedIn = true;
+        state.fetching = false;
+        state.error = undefined;
+        state.accessToken = payload;
+      })
+      .addCase(Login.rejected, (state, { error }) => {
+        ToastAndroid.show("Login failed", ToastAndroid.SHORT);
+        state.fetching = false;
+        state.error = error.message;
+      })
+      .addCase(logout.pending, (state) => {
+        state.signedIn = false;
+        state.fetching = true;
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.signedIn = false;
+        state.fetching = false;
+        state.accessToken = undefined;
+      })
+      .addCase(setSignedIn, (state) => {
+        console.log("AUTH REDUCER::SETTING SIGNED IN TRUE");
+        state.signedIn = true;
+      })
+      .addCase(checkUserAuth.fulfilled, (state, { payload }) => {
+        state.signedIn = payload;
+      });
   },
 });
 

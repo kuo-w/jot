@@ -1,3 +1,4 @@
+import { appForegroundColor } from "colors";
 import React, { ReactElement } from "react";
 import { Button, View } from "react-native";
 
@@ -8,8 +9,8 @@ type Props = {
 
 const HistoryOptionButton = ({ title, onPressAction }: Props): ReactElement => {
   return (
-    <View style={{ flex: 1 }}>
-      <Button title={title} onPress={onPressAction}></Button>;
+    <View style={{margin: 10}}>
+      <Button color={appForegroundColor} title={title} onPress={onPressAction}></Button>
     </View>
   );
 };

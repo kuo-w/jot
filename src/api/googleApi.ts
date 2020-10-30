@@ -11,19 +11,22 @@ export interface LoginResult {
 export const signin = async (): Promise<LoginResult | null> => {
   try {
     const loginResult: LogInResult = await Google.logInAsync(GOOGLE_CONFIG);
-    // const { type, accessToken, idToken, user } = loginResult;
     if (loginResult.type === "success") {
+      if (!(loginResult.idToken && loginResult.accessToken)) {
+        return null;
+      }
+
       return {
-        idToken: loginResult.idToken ?? "",
-        accessToken: loginResult.accessToken ?? "",
+        idToken: loginResult.idToken,
+        accessToken: loginResult.accessToken,
         user: loginResult.user,
       };
     }
 
     return null;
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error(`Google sign-in failed: ${error}`);
+    throw new Error(error);
   }
 };
 

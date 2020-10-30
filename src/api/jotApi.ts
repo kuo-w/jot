@@ -1,7 +1,12 @@
-import { Jot } from "types";
-import firebase from "./firebaseApi";
+import { Jot, RemoteApi, JotGetAll, ShouldFetchRemote } from "types";
 import storage, { StorageKey } from "./storageApi";
 import { v4 as uuidv4 } from "uuid";
+
+let remoteApi: RemoteApi | null = null;
+
+const initializeApi = (remoteApi_: RemoteApi) => {
+  remoteApi = remoteApi_;
+};
 
 const _getUniqueByGuid = (items: Jot[]): Jot[] => {
   const uniqueGuids = new Set<string>();
@@ -9,10 +14,10 @@ const _getUniqueByGuid = (items: Jot[]): Jot[] => {
 
   items.forEach((item) => {
     if (uniqueGuids.has(item.guid)) {
-      console.error(`Found duplicate: ${item.guid}`);
       return;
     }
 
+    uniqueGuids.add(item.guid);
     result.add(item);
   });
 
@@ -35,53 +40,92 @@ const _findDifference = (subset: Jot[], all: Jot[]): Jot[] => {
   return complement;
 };
 
-const _syncWithConnected = async (): Promise<Jot[]> => {
+const _syncWithConnected = async (
+  shouldFetchRemote: boolean
+): Promise<JotGetAll> => {
+  console.log(`JOT API::REMOTE API EXISTS? ${remoteApi != null}`);
+
+  if (!shouldFetchRemote || !remoteApi) {
+    const items = (await storage.get<Jot[]>(StorageKey.JOTS)) ?? [];
+    console.log("JOT API::LOCAL FETCH");
+    console.log(items);
+    return {
+      items: items,
+      remoteFetch: false,
+    };
+  }
+
+  console.log("JOT API::SYNCING");
   const result = await Promise.all([
-    firebase.getJots(),
+    remoteApi.getall(),
     storage.get<Jot[]>(StorageKey.JOTS),
   ]);
   const remote = result[0];
   let local = result[1];
 
-  if (local == null) {
-    local = new Array<Jot>();
-  } else {
-    local = _getUniqueByGuid(local);
+  console.log("JOT API::REMOTE RESULT");
+  console.log(remote);
+  console.log("JOT API::LOCAL RESULT");
+  console.log(local);
+
+  if (local == undefined) {
+    local = [];
   }
 
   if (remote == undefined) {
-    return local;
+    return { items: local, remoteFetch: false };
   }
 
-  const combined = _getUniqueByGuid(remote.concat(<Jot[]>local));
+  const combined = _getUniqueByGuid(remote.concat(local));
+
+  console.log("JOT API::COMBINED");
+  console.log(combined);
+
   const itemsToUpload = _findDifference(remote, combined);
 
   for (const j of itemsToUpload) {
-    firebase.setJot(j);
+    remoteApi.set(j);
   }
+  console.log("JOT API::UPLOAD ITEMS");
+  console.log(itemsToUpload);
 
-  storage.write<Jot[]>(StorageKey.JOTS, combined);
+  await storage.write<Jot[]>(StorageKey.JOTS, combined);
 
-  return combined;
+  return { items: combined, remoteFetch: true };
 };
 
-const getall = async (): Promise<Jot[]> => {
-  return await _syncWithConnected();
+const _sort = (items: Jot[]) => {
+  return items.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+};
+
+const getall = async (
+  shouldFetchRemote: ShouldFetchRemote
+): Promise<JotGetAll> => {
+  const result = await _syncWithConnected(shouldFetchRemote);
+  result.items = _sort(result.items);
+  return result;
 };
 
 const save = async (text: string): Promise<Jot[]> => {
   const item: Jot = {
     text,
-    createdAt: new Date(),
+    createdAt: new Date().toJSON(),
     guid: uuidv4(),
   };
 
-  const tasks = new Array<Promise<void | Jot[]>>();
-  tasks.push(storage.pushItem<Jot>(StorageKey.JOTS, item));
-  tasks.push(firebase.setJot(item));
+  const tasks: (Promise<any> | Promise<void>)[] = [
+    storage.pushItem<Jot>(StorageKey.JOTS, item),
+  ];
+
+  if (remoteApi) {
+    tasks.push(remoteApi.set(item));
+  }
 
   const result = await Promise.all(tasks);
-  return <Jot[]>result[0];
+
+  return _sort(result[0]);
 };
 
-export default { save, getall };
+export default { save, getall, initializeApi };

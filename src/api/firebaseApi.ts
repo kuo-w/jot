@@ -3,13 +3,14 @@ import "@firebase/firestore";
 import type { Timestamp } from "@firebase/firestore-types";
 
 import { GoogleUser } from "expo-google-app-auth/src/Google";
-import { CreatedAtTimestamp, Jot } from "types";
+import { CreatedAtTimestamp, FirebaseUser, Jot, RemoteApi } from "types";
+import { getall } from "@store/jotsSlice";
 
 const jotConverter = {
   toFirestore(jot: Jot): firebase.firestore.DocumentData {
     return {
       ...jot,
-      createdAt: _toTimestamp(jot.createdAt),
+      createdAt: _toTimestamp(new Date(jot.createdAt)),
       userid: _uid(),
     };
   },
@@ -18,13 +19,28 @@ const jotConverter = {
     options: firebase.firestore.SnapshotOptions
   ): Jot {
     const data = <Jot & CreatedAtTimestamp>snapshot.data(options);
-    return { ...data, createdAt: data.createdAt.toDate() };
+    return { ...data, createdAt: data.createdAt.toDate().toJSON() };
   },
 };
 
-const db = firebase.firestore();
-const jotsRef = db.collection("/jots").withConverter(jotConverter);
-const usersRef = db.collection("/users");
+let jotsRef: firebase.firestore.CollectionReference<Jot>;
+let usersRef: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+
+if (firebase.apps.length > 0) {
+  const db = firebase.firestore();
+  jotsRef = db.collection("/jots").withConverter(jotConverter);
+  usersRef = db.collection("/users");
+}
+
+const initializeRefs = () => {
+  if (jotsRef || usersRef) {
+    return;
+  }
+
+  const db = firebase.firestore();
+  jotsRef = db.collection("/jots").withConverter(jotConverter);
+  usersRef = db.collection("/users");
+};
 
 const _uid = (): string | undefined => {
   try {
@@ -42,61 +58,73 @@ const _toTimestamp = (date: Date): Timestamp => {
 const auth = async (
   idToken: string,
   accessToken: string
-): Promise<firebase.auth.UserCredential | null> => {
+): Promise<firebase.auth.UserCredential> => {
   try {
     const credential = firebase.auth.GoogleAuthProvider.credential(
       idToken,
       accessToken
     );
+
     const result = await firebase.auth().signInWithCredential(credential);
     return result;
   } catch (error) {
-    console.error(`Error signing into Firebase: ${error}`);
-    return null;
+    console.error(`Firebase - signin fail: ${error}`);
+    throw new Error(error);
   }
 };
 
-const setUser = async (user: GoogleUser): Promise<void> => {
-  try {
-    const userUID = _uid();
-    if (userUID == undefined) {
-      throw new Error("Current user is not authorized.");
-    }
+const setUser = async (user: GoogleUser | FirebaseUser): Promise<void> => {
+  if (_uid() == undefined) {
+    throw new Error("Firebase UID is undefined");
+  }
 
-    await usersRef.doc(userUID).set(user);
+  try {
+    await usersRef.doc(_uid()).set(user);
   } catch (error) {
-    console.log(`Error setting user: ${user}`);
-    throw error;
+    console.log(`Firebase - user set fail: ${user}`);
+    throw new Error(error);
   }
 };
 
-const getJots = async (): Promise<Jot[] | undefined> => {
+const get = async (): Promise<Jot[] | undefined> => {
+  if (!_uid() || !jotsRef) return;
+
   try {
+    console.log("FIREBASE API::GET JOTS");
+
     const snapshot = await jotsRef.where("userid", "==", _uid()).get();
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc: any) => doc.data());
   } catch (error) {
-    console.error(`Error getting jots for UID ${_uid()}`);
+    console.error(`Firebase - get fail: ${error}`);
     return undefined;
   }
 };
 
-const setJot = async (jot: Jot): Promise<void> => {
+const set = async (jot: Jot): Promise<void> => {
+  if (!_uid() || !jotsRef) return;
+
   try {
+    console.log("FIREBASE API::SET");
+    console.log(jot);
+
     await jotsRef.add(jot);
   } catch (error) {
-    console.error(error);
-    // TODO: handle error
-    // Add queue to retry at a later time
-    // Or rethrow error to show message to user
+    console.error(`Firebase - write fail: ${error}`);
   }
 };
 
 const logout = async (): Promise<void> => {
   try {
     await firebase.auth().signOut();
+    console.log("Firebase - logout successful");
   } catch (error) {
-    console.error(error);
+    console.error(`Firebase - logout fail: ${error}`);
   }
 };
 
-export default { auth, setUser, logout, setJot, getJots };
+const api: RemoteApi = {
+  getall: get,
+  set: set,
+};
+
+export default { initializeRefs, auth, setUser, logout, api };

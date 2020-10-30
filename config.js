@@ -1,13 +1,13 @@
 import * as AppAuth from "expo-app-auth";
 import {
   GOOGLE_CONFIG_CREDENTIALS,
-  FIREBASE_CONFIG_CREDENTIALS
+  FIREBASE_CONFIG_CREDENTIALS,
 } from "./credentials.js";
 
 const {
   expoClientId,
   androidClientId,
-  androidStandaloneAppClientId
+  androidStandaloneAppClientId,
 } = GOOGLE_CONFIG_CREDENTIALS;
 
 const GOOGLE_CONFIG = {
@@ -15,7 +15,7 @@ const GOOGLE_CONFIG = {
   androidClientId,
   androidStandaloneAppClientId,
   scopes: ["profile", "email"],
-  redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`
+  redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`,
 };
 
 const {
@@ -25,7 +25,7 @@ const {
   storageBucket,
   projectId,
   messagingSenderId,
-  appId
+  appId,
 } = FIREBASE_CONFIG_CREDENTIALS;
 
 const FIREBASE_CONFIG = {
@@ -35,7 +35,9 @@ const FIREBASE_CONFIG = {
   storageBucket,
   projectId,
   messagingSenderId,
-  appId
+  appId,
 };
 
-export { FIREBASE_CONFIG, GOOGLE_CONFIG };
+const STUB_REMOTE_API = true;
+
+export { FIREBASE_CONFIG, GOOGLE_CONFIG, STUB_REMOTE_API };
