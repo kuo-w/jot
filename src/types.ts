@@ -4,6 +4,7 @@ import { RootState } from "@store/index";
 import type { Timestamp } from "@firebase/firestore-types";
 import { ReactNode } from "react";
 import { LoginResult } from "@api/googleApi";
+import { GoogleUser } from "expo-google-app-auth";
 
 export type FirebaseUser = {
   uid: string;
@@ -53,8 +54,9 @@ export type RootStackParamList = {
 };
 
 export type RemoteApi = {
-  getall: () => Promise<Jot[] | undefined>;
+  getAll: () => Promise<Jot[] | undefined>;
   set: (jot: Jot) => Promise<void>;
+  setUser: (user: GoogleUser | FirebaseUser) => Promise<void>;
 };
 
 export type ScrollView = {

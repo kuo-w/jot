@@ -1,9 +1,9 @@
 import { mocked } from "ts-jest/utils";
 import { Jot } from "types";
-import dayjs from "dayjs";
 
 import jotApi from "./jotApi";
 import storageApi from "./storageApi";
+import { jot1, jot2, jot3 } from "./__mocks__/mockData";
 
 import mockRemoteApi, { mockedSet } from "./__mocks__/remoteApi";
 
@@ -11,17 +11,6 @@ jest.mock("./firebaseApi");
 jest.mock("./storageApi");
 jest.mock("@react-native-community/async-storage");
 
-const item1 = {
-  guid: "123",
-  text: "test",
-  createdAt: dayjs().add(1, "day").toJSON(),
-};
-
-const item2 = {
-  guid: "456",
-  text: "test",
-  createdAt: new Date().toJSON(),
-};
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -49,32 +38,63 @@ describe("getting all", () => {
     });
   };
 
+  const _assertSets = (items: Jot[]) => {
+    items.forEach((i) => {
+      expect(mockedSet).toBeCalledWith(i);
+    });
+  };
+
+  const _assertNotSets = (items: Jot[]) => {
+    items.forEach((i) => {
+      expect(mockedSet).not.toBeCalledWith(i);
+    });
+  };
+
   test("with same data for remote and local", async () => {
-    await _assertGetAll([item1], true, [item1], [item1]);
+    await _assertGetAll([jot1], true, [jot1], [jot1]);
+    _assertNotSets([jot1]);
   });
 
   test("with local ahead of remote", async () => {
-    await _assertGetAll([item1, item2], true, [item1, item2], [item2]);
+    await _assertGetAll([jot1, jot2], true, [jot1, jot2], [jot2]);
+    _assertSets([jot1]);
+    _assertNotSets([jot2]);
   });
 
   test("with remote ahead of local", async () => {
-    await _assertGetAll([item1, item2], true, [], [item1, item2]);
+    await _assertGetAll([jot1, jot2], true, [], [jot1, jot2]);
+    _assertNotSets([jot1, jot2]);
   });
 
   test("with no local data", async () => {
-    await _assertGetAll([item1], true, undefined, [item1]);
+    await _assertGetAll([jot1], true, undefined, [jot1]);
+    _assertNotSets([jot1]);
   });
 
   test("with no remote data", async () => {
-    await _assertGetAll([item1], false, [item1], undefined);
+    await _assertGetAll([jot1], false, [jot1], undefined);
+    _assertNotSets([jot1]);
   });
 
   test("sorts result desc", async () => {
-    await _assertGetAll([item1, item2], true, [], [item2, item1]);
+    await _assertGetAll([jot1, jot2], true, [], [jot2, jot1]);
+    _assertNotSets([jot1, jot2]);
   });
 
   test("removes duplicates", async () => {
-    await _assertGetAll([item1, item2], true, [item1, item1], [item2, item2]);
+    await _assertGetAll([jot1, jot2], true, [jot1, jot1], [jot2, jot2]);
+    _assertSets([jot1]);
+    _assertNotSets([jot2]);
+  });
+
+  test("additional upload conditions", async () => {
+    await _assertGetAll([jot1, jot2, jot3], true, [jot1], [jot3, jot2]);
+    _assertSets([jot1]);
+    _assertNotSets([jot3, jot2]);
+
+    await _assertGetAll([jot1, jot2, jot3], true, [jot1, jot3, jot2], []);
+    _assertSets([jot1, jot3, jot2]);
+    _assertNotSets([]);
   });
 });
 
@@ -82,7 +102,7 @@ describe("set", () => {
   test("saves", async () => {
     jotApi.initializeApi(mockRemoteApi());
     const mockedStorageApi = mocked(storageApi.pushItem).mockResolvedValue([
-      item1,
+      jot1,
     ]);
 
     await jotApi.save("sometext");

@@ -123,8 +123,11 @@ const logout = async (): Promise<void> => {
 };
 
 const api: RemoteApi = {
-  getall: get,
-  set: set,
+  getAll: get,
+  set,
+  setUser,
 };
 
-export default { initializeRefs, auth, setUser, logout, api };
+export default { initializeRefs, auth, logout };
+
+export const firebaseRemoteApi = api;

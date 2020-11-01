@@ -4,15 +4,14 @@ import { AppDispatch, RootState } from "@store/index";
 import { Jot, JotGetAll } from "types";
 import storageApi, { StorageKey } from "@api/storageApi";
 import dayjs from "dayjs";
+import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 
-type JotsState = {
+export type JotsState = {
   jots: Jot[];
   loading: boolean;
   error: string | undefined;
   remoteFetchTime: string | undefined;
 };
-
-export const resetRemoteFetchTime = createAction("jots/resetRemoteFetchTime");
 
 export const save = createAsyncThunk(
   "jots/save",
@@ -26,21 +25,20 @@ export const save = createAsyncThunk(
   }
 );
 
-const setRemoteFetchTime = createAction<string>("jots/setRemoteFetchTime");
+export const setRemoteFetchTime = createAction<string | undefined>(
+  "jots/setRemoteFetchTime"
+);
 
 export const clearLocally = createAsyncThunk<
-  null,
+  void,
   undefined,
   {
     dispatch: AppDispatch;
   }
->("jots/clearLocally", async (_, { dispatch }) => {
+>("jots/clearLocally", async () => {
   console.log("JOT THUNK::CLEARING LOCAL DATA");
   await storageApi.clear(StorageKey.JOTS);
   await storageApi.clear(StorageKey.REMOTEFETCHTIME);
-  dispatch(resetRemoteFetchTime());
-  dispatch(getall());
-  return null;
 });
 
 export const getall = createAsyncThunk<
@@ -65,10 +63,13 @@ export const getall = createAsyncThunk<
       thunkApi.dispatch(setRemoteFetchTime(lastFetchTime));
     }
 
-    const thirtyMinutesAgo = dayjs().subtract(30, "minute");
+    const minWaitTime = dayjs().subtract(
+      MIN_WAIT_TIME_REMOTE_FETCH_MINS,
+      "minute"
+    );
     const remoteGetWaitPeriodElapsed =
       lastFetchTime == undefined ||
-      dayjs(lastFetchTime).diff(thirtyMinutesAgo, "minute") < 0;
+      dayjs(lastFetchTime).diff(minWaitTime, "minute") < 0;
 
     const shouldGetRemote =
       state.network.isInternetReachable &&
@@ -94,7 +95,7 @@ export const getall = createAsyncThunk<
   }
 });
 
-const initialState: JotsState = {
+export const jotsInitialState: JotsState = {
   jots: [],
   loading: false,
   error: undefined,
@@ -103,7 +104,7 @@ const initialState: JotsState = {
 
 export const jotsSlice = createSlice({
   name: "jots",
-  initialState,
+  initialState: jotsInitialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -115,7 +116,11 @@ export const jotsSlice = createSlice({
         console.log(payload);
         state.loading = false;
 
-        if (payload == undefined) {
+        if (!payload) {
+          return;
+        }
+
+        if (jotApi.itemsAreEqual(state.jots, payload.items)) {
           return;
         }
 
@@ -142,6 +147,10 @@ export const jotsSlice = createSlice({
         state.loading = false;
       })
       .addCase(setRemoteFetchTime, (state, { payload }) => {
+        if (!payload) {
+          return (state.remoteFetchTime = undefined);
+        }
+
         if (
           state.remoteFetchTime &&
           dayjs(payload).diff(state.remoteFetchTime, "minute") == 0
@@ -151,8 +160,9 @@ export const jotsSlice = createSlice({
 
         state.remoteFetchTime = payload;
       })
-      .addCase(resetRemoteFetchTime, (state) => {
+      .addCase(clearLocally.fulfilled, (state) => {
         state.remoteFetchTime = undefined;
+        state.jots = [];
       });
   },
 });

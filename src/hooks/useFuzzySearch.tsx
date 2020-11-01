@@ -41,6 +41,8 @@ const useFuzzySearch = (items: object[], textPath: string, idPath: string) => {
     const searchData = items.reduce(reducer, []);
     const options: Fuse.IFuseOptions<SplitText> = {
       keys: ["text"], // Accesses SplitText.text. Searches will look at this value when scoring matches.
+      ignoreLocation: true, // Ignore where the pattern happens in a string, e.g. matches don't have to be within 60 characters.
+      minMatchCharLength: 3, // The 1 character default isn't that useful.
     };
     const fuse_ = new Fuse(searchData, options);
     setFuse(fuse_);

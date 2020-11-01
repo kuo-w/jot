@@ -2,6 +2,7 @@ import { LoginOAuthResult } from "types";
 import * as google from "@api/googleApi";
 import firebaseApi from "@api/firebaseApi";
 import firebase from "firebase";
+import remoteApi from "@api/remoteApi";
 
 const getCurrentUser = async () => {
   return new Promise<firebase.User | null>((resolve, reject) => {
@@ -33,7 +34,7 @@ const authGoogleLogin = async (): Promise<string | undefined> => {
   try {
     const { idToken, accessToken, user } = oauthResult;
     await firebaseApi.auth(idToken, accessToken);
-    await firebaseApi.setUser(user);
+    await remoteApi.setUser(user);
     return accessToken;
   } catch (error) {
     console.error("Firebase - auth fail:");
@@ -53,7 +54,7 @@ const authAnonymousLogin = async (): Promise<undefined> => {
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
         console.log("AUTH API::ANONYMOUS USER DID SIGN IN");
-        await firebaseApi.setUser({
+        await remoteApi.setUser({
           uid: user.uid,
           displayName: user.displayName,
           email: user.email,

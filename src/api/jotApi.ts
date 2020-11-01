@@ -24,20 +24,12 @@ const _getUniqueByGuid = (items: Jot[]): Jot[] => {
   return [...result];
 };
 
-const _findDifference = (subset: Jot[], all: Jot[]): Jot[] => {
-  const reducer = (acc: Map<string, Jot>, j: Jot) => {
-    acc.set(j.guid, j);
-    return acc;
-  };
-  const complement = new Array<Jot>();
-  const subsetmap = subset.reduce(reducer, new Map<string, Jot>());
-  all.forEach((j) => {
-    if (!subsetmap.has(j.guid)) {
-      complement.push(<Jot>subsetmap.get(j.guid));
-    }
-  });
+const _getItemsOnlyLocal = (local: Jot[], remote: Jot[]): Jot[] => {
+  const remote_ = new Set(remote.map((i) => i.guid));
+  const local_ = new Set(local.map((i) => i.guid));
+  const localOnly = new Set([...local_].filter((i) => !remote_.has(i)));
 
-  return complement;
+  return [...local].filter((i) => localOnly.has(i.guid));
 };
 
 const _syncWithConnected = async (
@@ -57,7 +49,7 @@ const _syncWithConnected = async (
 
   console.log("JOT API::SYNCING");
   const result = await Promise.all([
-    remoteApi.getall(),
+    remoteApi.getAll(),
     storage.get<Jot[]>(StorageKey.JOTS),
   ]);
   const remote = result[0];
@@ -81,7 +73,7 @@ const _syncWithConnected = async (
   console.log("JOT API::COMBINED");
   console.log(combined);
 
-  const itemsToUpload = _findDifference(remote, combined);
+  const itemsToUpload = _getItemsOnlyLocal(local, remote);
 
   for (const j of itemsToUpload) {
     remoteApi.set(j);
@@ -128,4 +120,17 @@ const save = async (text: string): Promise<Jot[]> => {
   return _sort(result[0]);
 };
 
-export default { save, getall, initializeApi };
+const itemsAreEqual = (a: Jot[], b: Jot[]) => {
+  return (
+    a
+      .map((j) => j.guid)
+      .sort()
+      .join(",") ===
+    b
+      .map((j) => j.guid)
+      .sort()
+      .join(",")
+  );
+};
+
+export default { save, getall, initializeApi, itemsAreEqual };

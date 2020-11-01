@@ -8,9 +8,7 @@ import { CompositeNavigationProp } from "@react-navigation/native";
 
 import { logout, selectAuth } from "@store/authSlice";
 import SettingsOptionButton from "@components/Settings/SettingsOptionButton";
-import storageApi, { StorageKey } from "@api/storageApi";
-import { clearLocally, getall } from "@store/jotsSlice";
-import firebase from "firebase";
+import { clearLocally } from "@store/jotsSlice";
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<AppNavigatorParamList, "Settings">,

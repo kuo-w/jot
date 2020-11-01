@@ -23,12 +23,12 @@
       "request": "attach"
     },
     {
-      "name": "Update User With Guid",
+      "name": "Script",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "args": ["scripts/updateUsersWithGuid.ts"],
+      "args": ["scripts/__filename__.ts"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],

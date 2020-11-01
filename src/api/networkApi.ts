@@ -29,11 +29,10 @@ export const getNetState = (): NetInfoState => {
 const _executeCallbacks: NetInfoChangeHandler = async (
   state: NetInfoState
 ): Promise<void> => {
-  console.log("NETWORK API::STATE CHANGE > INTERNET REACHABLE?");
-  console.log(state.isInternetReachable);
-
-  console.log("NETWORK API::LISTENERS");
-  console.log(_listeners.length);
+  console.log(
+    `NETWORK API::STATE CHANGE > INTERNET REACHABLE? ${state.isInternetReachable}`
+  );
+  console.log(`NETWORK API::LISTENERS# > ${_listeners.length}`);
 
   _currentState = state;
 
@@ -41,3 +40,8 @@ const _executeCallbacks: NetInfoChangeHandler = async (
 };
 
 export const unsubscribe = NetInfo.addEventListener(_executeCallbacks);
+
+const networkApi = {
+  addListener,
+};
+export default networkApi;

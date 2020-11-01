@@ -8,15 +8,9 @@ type Props = {
 };
 
 const HistoryList = ({ items }: Props) => {
-  const [histItems, setHistItems] = useState(items);
-
-  useEffect(() => {
-    setHistItems(items);
-  }, [items]);
-
   return (
     <FlatList
-      data={histItems}
+      data={items}
       keyExtractor={(item: Jot, _index: number) => item.guid}
       renderItem={({ item }: { item: Jot }) => (
         <HistoryItem item={item}></HistoryItem>

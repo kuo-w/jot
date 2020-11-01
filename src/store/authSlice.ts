@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice, createAction } from "@reduxjs/toolkit";
-import { RootState } from "@store/index";
+import { AppDispatch, RootState } from "@store/index";
 import { ToastAndroid } from "react-native";
 import authApi from "@api/authApi";
 import { AuthOption } from "types";
-import { getall, resetRemoteFetchTime } from "./jotsSlice";
+import { getall, resetRemoteFetchTime, setRemoteFetchTime } from "./jotsSlice";
 
-type AuthState = {
+export type AuthState = {
   accessToken: string | undefined;
   fetching: boolean;
   error: string | undefined;
@@ -25,7 +25,7 @@ export const checkUserAuth = createAsyncThunk(
   }
 );
 
-const initialState: AuthState = {
+export const authInitialState: AuthState = {
   accessToken: undefined,
   fetching: false,
   error: undefined,
@@ -33,40 +33,42 @@ const initialState: AuthState = {
   auth: undefined,
 };
 
-export const Login = createAsyncThunk(
-  "auth/login",
-  async (
-    { method, onSuccess }: { method: AuthOption; onSuccess: () => void },
-    thunkApi
-  ) => {
-    console.log("AUTH THUNK::LOGIN");
-
-    let result;
-    try {
-      if (method === "Google") {
-        result = await authApi.authGoogleLogin();
-      } else if (method === "Anonymous") {
-        result = await authApi.authAnonymousLogin();
-      } else {
-        throw new Error(`Implement auth option: ${method}`);
-      }
-    } catch (error) {
-      console.error("AUTH THUNK::LOGIN ERROR");
-      console.error(error);
-      return thunkApi.rejectWithValue(error);
-    }
-
-    console.log("AUTH THUNK::LOGIN SUCCESSFUL");
-    authApi.actionOnAuth(() => {
-      console.log("AUTH API::IN CALLBACK");
-      onSuccess();
-      thunkApi.dispatch(setSignedIn());
-      thunkApi.dispatch(getall);
-    });
-
-    return result;
+export const Login = createAsyncThunk<
+  string | undefined,
+  { method: AuthOption; onSuccess: () => void },
+  {
+    dispatch: AppDispatch;
+    rejectValue: string | Error;
   }
-);
+>("auth/login", async ({ method, onSuccess }, thunkApi) => {
+  console.log("AUTH THUNK::LOGIN");
+
+  let result;
+  try {
+    if (method === "Google") {
+      result = await authApi.authGoogleLogin();
+    } else if (method === "Anonymous") {
+      result = await authApi.authAnonymousLogin();
+    } else {
+      throw new Error(`Implement auth option: ${method}`);
+    }
+  } catch (error) {
+    console.error("AUTH THUNK::LOGIN ERROR");
+    console.error(error);
+    return thunkApi.rejectWithValue(error);
+  }
+
+  console.log("AUTH THUNK::LOGIN SUCCESSFUL");
+  thunkApi.dispatch(setRemoteFetchTime(undefined));
+  authApi.actionOnAuth(() => {
+    console.log("AUTH API::IN CALLBACK");
+    onSuccess();
+    thunkApi.dispatch(setSignedIn());
+    thunkApi.dispatch(getall());
+  });
+
+  return result;
+});
 
 export const logout = createAsyncThunk<
   void,
@@ -75,8 +77,6 @@ export const logout = createAsyncThunk<
     state: RootState;
   }
 >("auth/logout", async (_, thunkApi) => {
-  thunkApi.dispatch(resetRemoteFetchTime());
-
   try {
     const { accessToken } = thunkApi.getState().auth;
     if (accessToken == null) {
@@ -93,7 +93,7 @@ export const logout = createAsyncThunk<
 
 export const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: authInitialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
