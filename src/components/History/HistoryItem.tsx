@@ -12,8 +12,7 @@ const HistoryItem = ({ item }: Props) => {
   return (
     <View
       style={{
-        backgroundColor: appForegroundColor,
-        borderRadius: 10,
+        borderRadius: 6,
         marginHorizontal: 20,
         paddingHorizontal: 20,
         paddingVertical: 10,

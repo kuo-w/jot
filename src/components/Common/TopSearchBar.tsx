@@ -7,12 +7,13 @@ type Props = {
   textChangeHandler: (text: string) => void;
 };
 
-const HistoryTopBar = forwardRef<TextInput, Props>(
+const TopSearchBar = forwardRef<TextInput, Props>(
   ({ textChangeHandler }, ref) => {
     return (
       <View
         style={{
           backgroundColor: appBgColor,
+          paddingHorizontal: 10,
           flexDirection: "row",
           zIndex: 1,
         }}
@@ -23,4 +24,4 @@ const HistoryTopBar = forwardRef<TextInput, Props>(
   }
 );
 
-export default HistoryTopBar;
+export default TopSearchBar;

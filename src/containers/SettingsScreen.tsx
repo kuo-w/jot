@@ -8,7 +8,7 @@ import { CompositeNavigationProp } from "@react-navigation/native";
 
 import { logout, selectAuth } from "@store/authSlice";
 import SettingsOptionButton from "@components/Settings/SettingsOptionButton";
-import { clearLocally } from "@store/jotsSlice";
+import { clearLocally } from "@store/jotSlice";
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<AppNavigatorParamList, "Settings">,

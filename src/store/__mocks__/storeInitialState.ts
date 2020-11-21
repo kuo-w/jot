@@ -1,5 +1,5 @@
 import { authInitialState, AuthState } from "@store/authSlice";
-import { jotsInitialState, JotsState } from "@store/jotsSlice";
+import { jotsInitialState, JotsState } from "@store/jotSlice";
 import { networkInitialState, NetworkState } from "@store/networkSlice";
 import { RootState } from "..";
 

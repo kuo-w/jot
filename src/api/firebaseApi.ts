@@ -4,7 +4,7 @@ import type { Timestamp } from "@firebase/firestore-types";
 
 import { GoogleUser } from "expo-google-app-auth/src/Google";
 import { CreatedAtTimestamp, FirebaseUser, Jot, RemoteApi } from "types";
-import { getall } from "@store/jotsSlice";
+import { getall } from "@store/jotSlice";
 
 const jotConverter = {
   toFirestore(jot: Jot): firebase.firestore.DocumentData {
@@ -113,6 +113,17 @@ const set = async (jot: Jot): Promise<void> => {
   }
 };
 
+const update = async (items: Jot[]): Promise<void> => {
+  if (!_uid() || !jotsRef) return;
+
+  try {
+    await Promise.all(items.map((i) => jotsRef.doc(i.guid).set(i)));
+  } catch (error) {
+    console.error(`Firebase - update fail`);
+    console.error(items);
+  }
+};
+
 const logout = async (): Promise<void> => {
   try {
     await firebase.auth().signOut();
@@ -126,6 +137,7 @@ const api: RemoteApi = {
   getAll: get,
   set,
   setUser,
+  update,
 };
 
 export default { initializeRefs, auth, logout };

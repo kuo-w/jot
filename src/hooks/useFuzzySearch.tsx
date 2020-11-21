@@ -42,7 +42,8 @@ const useFuzzySearch = (items: object[], textPath: string, idPath: string) => {
     const options: Fuse.IFuseOptions<SplitText> = {
       keys: ["text"], // Accesses SplitText.text. Searches will look at this value when scoring matches.
       ignoreLocation: true, // Ignore where the pattern happens in a string, e.g. matches don't have to be within 60 characters.
-      minMatchCharLength: 3, // The 1 character default isn't that useful.
+      minMatchCharLength: 1,
+      includeScore: true,
     };
     const fuse_ = new Fuse(searchData, options);
     setFuse(fuse_);
@@ -62,8 +63,10 @@ const useFuzzySearch = (items: object[], textPath: string, idPath: string) => {
   // Search dataset and return ids of objects with closest match.
   const search = (text: string): string[] | null => {
     const result = fuse?.search(text);
+    console.log("SEARCH RESULT");
+    console.log(result);
 
-    if (!result || result.length === 0) {
+    if (!result) {
       return null;
     }
 

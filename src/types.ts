@@ -15,12 +15,20 @@ export type FirebaseUser = {
   isAnonymous: boolean;
 };
 
+export type Topic = {
+  name: string;
+  count: number;
+};
+
 export type Jot = {
   text: string;
   createdAt: string;
   guid: string;
   userid?: string;
+  topics?: string[];
 };
+
+export type IconName = "checkmark" | "hash";
 
 export type JotGetAll = {
   items: Jot[];
@@ -42,9 +50,10 @@ export type ThunkResult<ReturnType = void> = ThunkAction<
 
 export type AppNavigatorParamList = {
   Jot: undefined;
-  History: undefined;
+  History: { topic: string } | undefined;
   Settings: undefined;
   SignIn: undefined;
+  Topics: undefined;
 };
 
 export type RootStackParamList = {
@@ -57,6 +66,7 @@ export type RemoteApi = {
   getAll: () => Promise<Jot[] | undefined>;
   set: (jot: Jot) => Promise<void>;
   setUser: (user: GoogleUser | FirebaseUser) => Promise<void>;
+  update: (items: Jot[]) => Promise<void>;
 };
 
 export type ScrollView = {

@@ -8,10 +8,12 @@ export const textTertiaryColor = "white";
 
 export const navActiveTintColor = "#c2185b";
 
-export const navInactiveTinColor = "4d4d4d";
+export const navInactiveTintColor = "#4d4d4d";
 
 export const navBgColor = "#010101";
 
 export const appBgColor = "black";
 
 export const appForegroundColor = "#333";
+
+export const appForegroundSecondColor = "#222";

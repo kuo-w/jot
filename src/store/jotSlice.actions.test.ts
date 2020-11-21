@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from ".";
 import appInitialState, {
   PartialRootState,
 } from "./__mocks__/storeInitialState";
-import { getall } from "./jotsSlice";
+import { getall } from "./jotSlice";
 import { JotGetAll } from "types";
 import dayjs from "dayjs";
 import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";

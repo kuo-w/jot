@@ -5,8 +5,9 @@ import HistoryScreen from "@containers/HistoryScreen";
 import SettingsScreen from "@containers/SettingsScreen";
 import Tab from "@containers/AppBottomTabNavigator";
 import { checkUserAuth } from "@store/authSlice";
-import { getall } from "@store/jotsSlice";
+import { getall } from "@store/jotSlice";
 import { useAppDispatch } from "@store/index";
+import TopicsScreen from "./TopicsScreen";
 
 const AppNavigator = (): ReactElement => {
   const dispatch = useAppDispatch();
@@ -22,6 +23,7 @@ const AppNavigator = (): ReactElement => {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Jot" component={JotScreen} />
+      <Tab.Screen name="Topics" component={TopicsScreen}></Tab.Screen>
       <Tab.Screen name="History" component={HistoryScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>

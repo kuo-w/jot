@@ -2,14 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
 
 import authReducer from "@store/authSlice";
-import jotsReducer from "@store/jotsSlice";
+import jotReducer from "@store/jotSlice";
 import networkReducer from "@store/networkSlice";
+import topicReducer from "@store/topicSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    jots: jotsReducer,
+    jots: jotReducer,
     network: networkReducer,
+    topics: topicReducer
   },
 });
 

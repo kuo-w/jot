@@ -1,7 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
-import { navActiveTintColor, navBgColor } from "colors";
+import { navActiveTintColor, navBgColor, navInactiveTintColor } from "colors";
 import { AppNavigatorParamList } from "types";
 
 const Tab = createBottomTabNavigator<AppNavigatorParamList>();
@@ -11,7 +11,7 @@ Tab.Navigator.defaultProps = {
     keyboardHidesTabBar: true,
     showLabel: false,
     activeTintColor: navActiveTintColor,
-    inactiveTintColor: navActiveTintColor,
+    inactiveTintColor: navInactiveTintColor,
     style: {
       backgroundColor: navBgColor,
       borderTopColor: navBgColor,
@@ -19,16 +19,14 @@ Tab.Navigator.defaultProps = {
   },
   screenOptions: ({ route }) => ({
     tabBarIcon: ({ color }) => {
-      const icons: { [routeName: string]: string } = {
-        Jot: "md-create",
-        History: "md-time",
-        Settings: "md-cog",
+      const icons: { [routeName: string]: JSX.Element } = {
+        Jot: <Ionicons name={"md-create"} size={25} color={color} />,
+        History: <Ionicons name={"md-time"} size={25} color={color} />,
+        Settings: <Ionicons name={"md-cog"} size={25} color={color} />,
+        Topics: <Feather name={"hash"} size={25} color={color}></Feather>,
       };
 
-      const Icon = (
-        <Ionicons name={icons[route.name]} size={25} color={color} />
-      );
-      return Icon;
+      return icons[route.name];
     },
   }),
 };

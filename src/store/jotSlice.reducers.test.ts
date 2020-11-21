@@ -1,4 +1,4 @@
-import reducer, { getall } from "./jotsSlice";
+import reducer, { getall } from "./jotSlice";
 import { jot1, jot2 } from "@api/__mocks__/mockData";
 import appInitialState from "./__mocks__/storeInitialState";
 import { Jot } from "types";

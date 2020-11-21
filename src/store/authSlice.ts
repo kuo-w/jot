@@ -3,7 +3,7 @@ import { AppDispatch, RootState } from "@store/index";
 import { ToastAndroid } from "react-native";
 import authApi from "@api/authApi";
 import { AuthOption } from "types";
-import { getall, resetRemoteFetchTime, setRemoteFetchTime } from "./jotsSlice";
+import { getall, setRemoteFetchTime } from "./jotSlice";
 
 export type AuthState = {
   accessToken: string | undefined;

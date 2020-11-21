@@ -1,64 +1,78 @@
-import React, {
-  ReactElement,
-  RefObject,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { TextInput, View } from "react-native";
-import { selectJots } from "store/jotsSlice";
+import { StyleSheet, Text, View } from "react-native";
+import { selectJots } from "@store/jotSlice";
 import HistoryEmpty from "@components/History/HistoryEmpty";
 import HistoryList from "@components/History/HistoryList";
-import { appBgColor } from "colors";
-import HistoryTopBar from "@components/History/HistoryTopBar";
-import useFuzzySearch from "hooks/useFuzzySearch";
-import { AppNavigatorParamList } from "types";
+import { appBgColor, navActiveTintColor } from "colors";
+import { AppNavigatorParamList, Jot } from "types";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { RouteProp } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "History">;
+type ScreenRouteProp = RouteProp<AppNavigatorParamList, "History">;
 
 type Props = {
   navigation: NavigationProp;
+  route: ScreenRouteProp;
 };
 
-const HistoryScreen = ({ navigation }: Props): ReactElement => {
-  const searchBarTextInput: React.RefObject<TextInput> = useRef(null);
+const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
   const { jots } = useSelector(selectJots);
-  const fuzzySearch = useFuzzySearch(jots, "text", "guid");
-  const [includeItemIds, setIncludeItemIds] = useState<string[] | null>(null);
+  const [ignoreFilter, setIgnoreFilter] = useState(false);
 
   useEffect(() => {
     const blurListener = navigation.addListener("blur", () => {
-      searchBarTextInput.current?.clear();
-      setIncludeItemIds(null);
+      setIgnoreFilter(false);
+      navigation.setParams({ topic: undefined });
     });
 
     return blurListener;
   }, [navigation]);
 
-  const handleSearchText = (text: string) => {
-    const includeIds = fuzzySearch(text);
-    setIncludeItemIds(includeIds);
-  };
-
-  const _filterItems = (itemsToInclude: string[] | null) => {
-    if (!itemsToInclude) {
-      return jots;
+  const _filterTopic = (items: Jot[], topic: string | undefined) => {
+    if (!topic) {
+      return items;
     }
 
-    return jots.filter((j) => itemsToInclude.includes(j.guid));
+    return items.filter((i) => i.topics?.includes(topic));
   };
+
+  const _filtered = (items: Jot[]) => {
+    if (ignoreFilter) {
+      return items;
+    }
+
+    const filtered = _filterTopic(items, route?.params?.topic);
+
+    return filtered;
+  };
+
+  const filtered = _filtered(jots);
 
   return (
     <View style={{ backgroundColor: appBgColor, flex: 1 }}>
       {jots.length > 0 ? (
         <>
-          <HistoryTopBar
-            ref={searchBarTextInput}
-            textChangeHandler={handleSearchText}
-          ></HistoryTopBar>
-          <HistoryList items={_filterItems(includeItemIds)}></HistoryList>
+          {!!route?.params?.topic && !ignoreFilter && (
+            <View style={styles.topBar}>
+              <Text style={styles.count}>
+                {`${filtered.length} / ${jots.length}`}
+              </Text>
+              <View style={styles.filterContainer}>
+                <Text style={styles.topic}>{route.params.topic}</Text>
+                <MaterialCommunityIcons.Button
+                  onPress={() => setIgnoreFilter(true)}
+                  name="filter-remove"
+                  size={22}
+                  color={navActiveTintColor}
+                  style={styles.filterButton}
+                ></MaterialCommunityIcons.Button>
+              </View>
+            </View>
+          )}
+          <HistoryList items={filtered}></HistoryList>
         </>
       ) : (
         <HistoryEmpty></HistoryEmpty>
@@ -66,5 +80,32 @@ const HistoryScreen = ({ navigation }: Props): ReactElement => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 10,
+    alignItems: "center",
+  },
+  filterButton: {
+    backgroundColor: appBgColor,
+  },
+  topic: {
+    color: navActiveTintColor,
+    fontSize: 16,
+    paddingHorizontal: 10,
+  },
+  count: {
+    color: navActiveTintColor,
+    fontSize: 16,
+    paddingLeft: 36,
+  },
+});
 
 export default HistoryScreen;
