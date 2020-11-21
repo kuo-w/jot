@@ -51,7 +51,6 @@ export type ThunkResult<ReturnType = void> = ThunkAction<
 export type AppNavigatorParamList = {
   Jot: undefined;
   History: { topic: string } | undefined;
-  Settings: undefined;
   SignIn: undefined;
   Topics: undefined;
 };
@@ -60,6 +59,7 @@ export type RootStackParamList = {
   AuthLoading: undefined;
   SignInOptions: undefined;
   App: undefined;
+  Settings: undefined;
 };
 
 export type RemoteApi = {

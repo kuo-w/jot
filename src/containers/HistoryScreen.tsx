@@ -5,12 +5,17 @@ import { selectJots } from "@store/jotSlice";
 import HistoryEmpty from "@components/History/HistoryEmpty";
 import HistoryList from "@components/History/HistoryList";
 import { appBgColor, navActiveTintColor } from "colors";
-import { AppNavigatorParamList, Jot } from "types";
+import { AppNavigatorParamList, Jot, RootStackParamList } from "types";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { RouteProp } from "@react-navigation/native";
+import { CompositeNavigationProp, RouteProp } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "History">;
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<AppNavigatorParamList, "History">,
+  StackNavigationProp<RootStackParamList>
+>;
 type ScreenRouteProp = RouteProp<AppNavigatorParamList, "History">;
 
 type Props = {
@@ -55,11 +60,11 @@ const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
     <View style={{ backgroundColor: appBgColor, flex: 1 }}>
       {jots.length > 0 ? (
         <>
-          {!!route?.params?.topic && !ignoreFilter && (
-            <View style={styles.topBar}>
-              <Text style={styles.count}>
-                {`${filtered.length} / ${jots.length}`}
-              </Text>
+          <View style={styles.topBar}>
+            <Text style={styles.count}>
+              {`${filtered.length} / ${jots.length}`}
+            </Text>
+            {!!route?.params?.topic && !ignoreFilter && (
               <View style={styles.filterContainer}>
                 <Text style={styles.topic}>{route.params.topic}</Text>
                 <MaterialCommunityIcons.Button
@@ -70,8 +75,15 @@ const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
                   style={styles.filterButton}
                 ></MaterialCommunityIcons.Button>
               </View>
-            </View>
-          )}
+            )}
+            <Ionicons.Button
+              style={{ backgroundColor: appBgColor }}
+              name="md-cog"
+              size={22}
+              color={navActiveTintColor}
+              onPress={() => navigation.navigate("Settings")}
+            />
+          </View>
           <HistoryList items={filtered}></HistoryList>
         </>
       ) : (
@@ -98,8 +110,7 @@ const styles = StyleSheet.create({
   },
   topic: {
     color: navActiveTintColor,
-    fontSize: 16,
-    paddingHorizontal: 10,
+    fontSize: 18,
   },
   count: {
     color: navActiveTintColor,

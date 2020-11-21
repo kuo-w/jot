@@ -20,6 +20,8 @@ import remoteApiStub from "@api/remoteApi.stub";
 import { setRemoteApi } from "@api/remoteApi";
 import { setNetState } from "@store/networkSlice";
 import networkApi from "@api/networkApi";
+import SettingsScreen from "@containers/SettingsScreen";
+import { RootStackParamList } from "types.js";
 dayjs.extend(relativeTime);
 
 LogBox.ignoreLogs(["Setting a timer"]);
@@ -58,7 +60,7 @@ const AppTheme = {
   },
 };
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const AppContainer = () => {
   return (
@@ -72,6 +74,7 @@ const AppContainer = () => {
         >
           <Stack.Screen name="App" component={AppNavigator} />
           <Stack.Screen name="SignInOptions" component={SignInScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

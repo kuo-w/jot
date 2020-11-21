@@ -22,7 +22,6 @@ Tab.Navigator.defaultProps = {
       const icons: { [routeName: string]: JSX.Element } = {
         Jot: <Ionicons name={"md-create"} size={25} color={color} />,
         History: <Ionicons name={"md-time"} size={25} color={color} />,
-        Settings: <Ionicons name={"md-cog"} size={25} color={color} />,
         Topics: <Feather name={"hash"} size={25} color={color}></Feather>,
       };
 
