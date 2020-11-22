@@ -6,7 +6,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "build": "expo build:android --release-channel production",
+    "build": "expo build:android -t apk",
     "test": "jest"
   },
   "dependencies": {

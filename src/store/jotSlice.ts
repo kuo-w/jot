@@ -6,7 +6,6 @@ import storageApi, { StorageKey } from "@api/storageApi";
 import dayjs from "dayjs";
 import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 import { categorizeTopics } from "./topicSlice";
-import thunk from "redux-thunk";
 
 export type JotsState = {
   jots: Jot[];
@@ -115,21 +114,11 @@ export const getall = createAsyncThunk<
     // Fetch data.
     const result = await jotApi.getall(shouldGetRemote);
 
-    console.log("ADDING RANDOM DATA");
-    [...Array(20)].forEach(() => {
-      result.items.push({
-        text: "meh",
-        createdAt: new Date().toString(),
-        guid: Math.random().toString(36).substr(2, 5),
-      });
-    });
-
     // Pass data around.
     if (result.remoteFetch) {
       storageApi.write<string>(StorageKey.REMOTEFETCHTIME, new Date().toJSON());
     }
 
-    thunkApi.dispatch(set(result));
     thunkApi.dispatch(categorizeTopics(result.items));
     return result;
   } catch (error) {
@@ -137,9 +126,6 @@ export const getall = createAsyncThunk<
     return thunkApi.rejectWithValue("Error getting data.");
   }
 });
-
-// Dispatched on return of async getall action.
-const set = createAction<JotGetAll>("jots/set");
 
 export const jotsInitialState: JotsState = {
   jots: [],
@@ -157,8 +143,7 @@ export const jotSlice = createSlice({
       .addCase(getall.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getall.fulfilled, () => {})
-      .addCase(set, (state, { payload }) => {
+      .addCase(getall.fulfilled, (state, { payload }) => {
         console.log(`JOT REDUCER::GETALL PAYLOAD`);
         console.log(payload);
         state.loading = false;

@@ -6,6 +6,8 @@ import { ReactNode } from "react";
 import { LoginResult } from "@api/googleApi";
 import { GoogleUser } from "expo-google-app-auth";
 
+export type AppUser = {};
+
 export type FirebaseUser = {
   uid: string;
   displayName: string | null;
@@ -67,6 +69,15 @@ export type RemoteApi = {
   set: (jot: Jot) => Promise<void>;
   setUser: (user: GoogleUser | FirebaseUser) => Promise<void>;
   update: (items: Jot[]) => Promise<void>;
+};
+
+export type AuthApi = {
+  initializeAuthApi: (api: RemoteApi) => void;
+  logout: (accessToken?: string | undefined) => Promise<void>;
+  getCurrentUser: () => Promise<AppUser | firebase.User | null>;
+  actionOnAuth: (callbackOnAuth: () => void) => void;
+  authAnonymousLogin: () => Promise<undefined>;
+  authGoogleLogin: () => Promise<string | undefined>;
 };
 
 export type ScrollView = {

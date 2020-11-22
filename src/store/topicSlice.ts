@@ -6,14 +6,14 @@ export type TopicState = {
   topics: Topic[];
 };
 
-const topicInitialState: TopicState = {
+export const topicInitialState: TopicState = {
   topics: [],
 };
 
 export const categorizeTopics = createAction("topic/set", (items: Jot[]) => {
   const reducer = (acc: { [topic: string]: number }, item: Jot) => {
     item.topics?.forEach((name) => {
-      acc[name] ??= 0;
+      acc[name] = acc[name] ?? 0;
       acc[name] += 1;
     });
     return acc;

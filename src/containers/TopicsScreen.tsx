@@ -84,10 +84,12 @@ const TopicsScreen = ({ navigation }: Props) => {
         ></TopicInput>
       )}
       <>
-        <TopSearchBar
-          ref={searchBarTextInput}
-          textChangeHandler={handleSearchText}
-        ></TopSearchBar>
+        <View style={{ paddingHorizontal: 10 }}>
+          <TopSearchBar
+            ref={searchBarTextInput}
+            textChangeHandler={handleSearchText}
+          ></TopSearchBar>
+        </View>
         <TopicList
           data={_filtered(topics)}
           onPress={goHistory}

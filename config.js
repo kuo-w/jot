@@ -40,7 +40,7 @@ const FIREBASE_CONFIG = {
 
 const MIN_WAIT_TIME_REMOTE_FETCH_MINS = 60;
 
-const STUB_REMOTE_API = false;
+const STUB_REMOTE_API = true;
 
 export {
   FIREBASE_CONFIG,

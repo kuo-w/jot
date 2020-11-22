@@ -4,7 +4,6 @@ import type { Timestamp } from "@firebase/firestore-types";
 
 import { GoogleUser } from "expo-google-app-auth/src/Google";
 import { CreatedAtTimestamp, FirebaseUser, Jot, RemoteApi } from "types";
-import { getall } from "@store/jotSlice";
 
 const jotConverter = {
   toFirestore(jot: Jot): firebase.firestore.DocumentData {
@@ -107,7 +106,7 @@ const set = async (jot: Jot): Promise<void> => {
     console.log("FIREBASE API::SET");
     console.log(jot);
 
-    await jotsRef.add(jot);
+    await jotsRef.doc(jot.guid).set(jot);
   } catch (error) {
     console.error(`Firebase - write fail: ${error}`);
   }

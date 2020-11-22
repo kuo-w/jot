@@ -1,4 +1,4 @@
-import { textTertiaryColor } from "colors";
+import { appBgColor, textTertiaryColor } from "colors";
 import React, { useEffect, useState } from "react";
 import { Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: "#0a0a0ab3",
+    backgroundColor: appBgColor,
     zIndex: 1,
     justifyContent: "center",
     alignItems: "center",

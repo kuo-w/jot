@@ -27,10 +27,16 @@ const setUser = async (user: GoogleUser | FirebaseUser) => {
   console.log(user);
 };
 
+const update = async (items: Jot[]) => {
+  console.log("REMOTE API STUB::UPDATING");
+  console.log(items);
+};
+
 const api: RemoteApi = {
   getAll,
   set,
   setUser,
+  update,
 };
 
 export default api;

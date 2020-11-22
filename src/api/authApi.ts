@@ -1,11 +1,16 @@
-import { LoginOAuthResult } from "types";
+import { AppUser, AuthApi, LoginOAuthResult, RemoteApi } from "types";
 import * as google from "@api/googleApi";
 import firebaseApi from "@api/firebaseApi";
 import firebase from "firebase";
-import remoteApi from "@api/remoteApi";
+
+let _remoteApi: RemoteApi | null = null;
+
+const initializeAuthApi = (api: RemoteApi) => {
+  _remoteApi = api;
+};
 
 const getCurrentUser = async () => {
-  return new Promise<firebase.User | null>((resolve, reject) => {
+  return new Promise<AppUser | firebase.User | null>((resolve, reject) => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         resolve(user);
@@ -34,7 +39,7 @@ const authGoogleLogin = async (): Promise<string | undefined> => {
   try {
     const { idToken, accessToken, user } = oauthResult;
     await firebaseApi.auth(idToken, accessToken);
-    await remoteApi.setUser(user);
+    await _remoteApi?.setUser(user);
     return accessToken;
   } catch (error) {
     console.error("Firebase - auth fail:");
@@ -54,7 +59,7 @@ const authAnonymousLogin = async (): Promise<undefined> => {
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
         console.log("AUTH API::ANONYMOUS USER DID SIGN IN");
-        await remoteApi.setUser({
+        await _remoteApi?.setUser({
           uid: user.uid,
           displayName: user.displayName,
           email: user.email,
@@ -100,10 +105,13 @@ const actionOnAuth = async (callbackOnAuth: () => void) => {
   });
 };
 
-export default {
+const _api: AuthApi = {
+  initializeAuthApi,
   logout,
   getCurrentUser,
   actionOnAuth,
   authAnonymousLogin,
   authGoogleLogin,
 };
+
+export default _api;

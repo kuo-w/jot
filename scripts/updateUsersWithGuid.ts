@@ -19,6 +19,7 @@ interface Dto {
   text: string;
   userid: string;
   guid?: string;
+  topics?: string[];
 }
 
 (async () => {

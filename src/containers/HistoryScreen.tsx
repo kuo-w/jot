@@ -58,32 +58,36 @@ const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
 
   return (
     <View style={{ backgroundColor: appBgColor, flex: 1 }}>
-      {jots.length > 0 ? (
-        <>
-          <View style={styles.topBar}>
+      <View style={styles.topBar}>
+        <View>
+          {jots.length > 0 && (
             <Text style={styles.count}>
               {`${filtered.length} / ${jots.length}`}
             </Text>
-            {!!route?.params?.topic && !ignoreFilter && (
-              <View style={styles.filterContainer}>
-                <Text style={styles.topic}>{route.params.topic}</Text>
-                <MaterialCommunityIcons.Button
-                  onPress={() => setIgnoreFilter(true)}
-                  name="filter-remove"
-                  size={22}
-                  color={navActiveTintColor}
-                  style={styles.filterButton}
-                ></MaterialCommunityIcons.Button>
-              </View>
-            )}
-            <Ionicons.Button
-              style={{ backgroundColor: appBgColor }}
-              name="md-cog"
+          )}
+        </View>
+        {!!route?.params?.topic && !ignoreFilter && (
+          <View style={styles.filterContainer}>
+            <Text style={styles.topic}>{route.params.topic}</Text>
+            <MaterialCommunityIcons.Button
+              onPress={() => setIgnoreFilter(true)}
+              name="filter-remove"
               size={22}
               color={navActiveTintColor}
-              onPress={() => navigation.navigate("Settings")}
-            />
+              style={styles.filterButton}
+            ></MaterialCommunityIcons.Button>
           </View>
+        )}
+        <Ionicons.Button
+          style={{ backgroundColor: appBgColor }}
+          name="md-cog"
+          size={22}
+          color={navActiveTintColor}
+          onPress={() => navigation.navigate("Settings")}
+        />
+      </View>
+      {jots.length > 0 ? (
+        <>
           <HistoryList items={filtered}></HistoryList>
         </>
       ) : (
