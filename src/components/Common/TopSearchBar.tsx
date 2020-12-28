@@ -4,24 +4,27 @@ import React, { forwardRef } from "react";
 import { View, TextInput } from "react-native";
 
 type Props = {
-  textChangeHandler: (text: string) => void;
+    textChangeHandler: (text: string) => void;
 };
 
 const TopSearchBar = forwardRef<TextInput, Props>(
-  ({ textChangeHandler }, ref) => {
-    return (
-      <View
-        style={{
-          backgroundColor: appBgColor,
-          paddingHorizontal: 10,
-          flexDirection: "row",
-          zIndex: 1,
-        }}
-      >
-        <SearchBar ref={ref} textChangeHandler={textChangeHandler}></SearchBar>
-      </View>
-    );
-  }
+    ({ textChangeHandler }, ref) => {
+        return (
+            <View
+                style={{
+                    backgroundColor: appBgColor,
+                    paddingHorizontal: 10,
+                    flexDirection: "row",
+                    zIndex: 1,
+                }}
+            >
+                <SearchBar
+                    ref={ref}
+                    textChangeHandler={textChangeHandler}
+                ></SearchBar>
+            </View>
+        );
+    }
 );
 
 export default TopSearchBar;

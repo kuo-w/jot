@@ -6,12 +6,12 @@ export const mockedSetUser = jest.fn();
 export const mockedUpdate = jest.fn();
 
 const mockRemoteApi = (mockGetall?: Jot[] | undefined): RemoteApi => {
-  return {
-    getAll: mockedGetAll.mockResolvedValue(mockGetall),
-    set: mockedSet.mockResolvedValue({}),
-    setUser: mockedSetUser.mockResolvedValue({}),
-    update: mockedUpdate.mockResolvedValue({}),
-  };
+    return {
+        getAll: mockedGetAll.mockResolvedValue(mockGetall),
+        set: mockedSet.mockResolvedValue({}),
+        setUser: mockedSetUser.mockResolvedValue({}),
+        update: mockedUpdate.mockResolvedValue({}),
+    };
 };
 
 export default mockRemoteApi;

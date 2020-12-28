@@ -15,52 +15,57 @@ import * as fs from "fs";
  */
 
 interface Dto {
-  createdAt: firebase.firestore.Timestamp;
-  text: string;
-  userid: string;
-  guid?: string;
-  topics?: string[];
+    createdAt: firebase.firestore.Timestamp;
+    text: string;
+    userid: string;
+    guid?: string;
+    topics?: string[];
 }
 
 (async () => {
-  console.log("STARTING");
+    console.log("STARTING");
 
-  firebase.initializeApp(FIREBASE_CONFIG_CREDENTIALS);
-  const db = firebase.firestore();
+    firebase.initializeApp(FIREBASE_CONFIG_CREDENTIALS);
+    const db = firebase.firestore();
 
-  const docsRef = db.collection("/jots");
+    const docsRef = db.collection("/jots");
 
-  const snapshot = await docsRef.get();
+    const snapshot = await docsRef.get();
 
-  let numCompleted = 0;
-  let numSkipped = 0;
-  const skippedItems = new Array<Dto>();
+    let numCompleted = 0;
+    let numSkipped = 0;
+    const skippedItems = new Array<Dto>();
 
-  const tasks = snapshot.docs.map(
-    async (doc: firebase.firestore.DocumentData) => {
-      const item = <Dto>doc.data();
-      if (item.guid != null) {
-        numSkipped++;
-        skippedItems.push(item);
-        return;
-      }
+    const tasks = snapshot.docs.map(
+        async (doc: firebase.firestore.DocumentData) => {
+            const item = <Dto>doc.data();
+            if (item.guid != null) {
+                numSkipped++;
+                skippedItems.push(item);
+                return;
+            }
 
-      item.guid = uuidv4();
-      await db.collection("/jots").doc(doc.id).set(item);
-      console.log(`Done: ${doc.id}`);
-      numCompleted += 1;
+            item.guid = uuidv4();
+            await db.collection("/jots").doc(doc.id).set(item);
+            console.log(`Done: ${doc.id}`);
+            numCompleted += 1;
+        }
+    );
+
+    await Promise.all(tasks);
+
+    try {
+        await fs.promises.writeFile(
+            "./data.json",
+            JSON.stringify(skippedItems)
+        );
+        console.log("SUCCESSFULLY WROTE DATA TO FILES.");
+    } catch (error) {
+        console.error(error);
     }
-  );
 
-  await Promise.all(tasks);
-
-  try {
-    await fs.promises.writeFile("./data.json", JSON.stringify(skippedItems));
-    console.log("SUCCESSFULLY WROTE DATA TO FILES.");
-  } catch (error) {
-    console.error(error);
-  }
-
-  console.info(`\nALL DONE\nCOMPLETED ${numCompleted}\nSKIPPED ${numSkipped}`);
-  process.exit();
+    console.info(
+        `\nALL DONE\nCOMPLETED ${numCompleted}\nSKIPPED ${numSkipped}`
+    );
+    process.exit();
 })();

@@ -28,57 +28,60 @@ LogBox.ignoreLogs(["Setting a timer"]);
 LogBox.ignoreLogs(["Remote debugger"]);
 
 if (firebase.apps.length === 0) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  firebaseApi.initializeRefs();
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseApi.initializeRefs();
 }
 
 (() => {
-  console.log("APP NAV::ADDING DISPATCH ON NETWORK CHANGE LISTENER");
-  networkApi.addListener((nstate) => {
-    console.info("APP::DISPATCHING NETWORK STATE CHANGE");
-    console.log(nstate);
-    store.dispatch(setNetState(nstate));
-  });
+    console.log("APP NAV::ADDING DISPATCH ON NETWORK CHANGE LISTENER");
+    networkApi.addListener((nstate) => {
+        console.info("APP::DISPATCHING NETWORK STATE CHANGE");
+        console.log(nstate);
+        store.dispatch(setNetState(nstate));
+    });
 })();
 
 (async () => {
-  console.info("APP::INITIALIZE JOTAPI");
-  if (STUB_REMOTE_API) {
-    console.info("APP::STUBBING REMOTE API");
-    setRemoteApi(remoteApiStub);
-  } else {
-    console.info("APP::USING FIREBASE AS REMOTE API");
-    setRemoteApi(firebaseRemoteApi);
-  }
+    console.info("APP::INITIALIZE JOTAPI");
+    if (STUB_REMOTE_API) {
+        console.info("APP::STUBBING REMOTE API");
+        setRemoteApi(remoteApiStub);
+    } else {
+        console.info("APP::USING FIREBASE AS REMOTE API");
+        setRemoteApi(firebaseRemoteApi);
+    }
 })();
 
 const AppTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: appBgColor,
-  },
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        background: appBgColor,
+    },
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const AppContainer = () => {
-  return (
-    <Provider store={store}>
-      <NavigationContainer theme={AppTheme}>
-        <StatusBar hidden={true} />
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="App" component={AppNavigator} />
-          <Stack.Screen name="SignInOptions" component={SignInScreen} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </Provider>
-  );
+    return (
+        <Provider store={store}>
+            <NavigationContainer theme={AppTheme}>
+                <StatusBar hidden={true} />
+                <Stack.Navigator
+                    screenOptions={{
+                        headerShown: false,
+                    }}
+                >
+                    <Stack.Screen name="App" component={AppNavigator} />
+                    <Stack.Screen
+                        name="SignInOptions"
+                        component={SignInScreen}
+                    />
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </Provider>
+    );
 };
 
 export default AppContainer;

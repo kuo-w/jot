@@ -7,12 +7,12 @@ import networkReducer from "@store/networkSlice";
 import topicReducer from "@store/topicSlice";
 
 export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    jots: jotReducer,
-    network: networkReducer,
-    topics: topicReducer
-  },
+    reducer: {
+        auth: authReducer,
+        jots: jotReducer,
+        network: networkReducer,
+        topics: topicReducer,
+    },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

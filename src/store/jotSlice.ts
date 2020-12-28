@@ -8,202 +8,209 @@ import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 import { categorizeTopics } from "./topicSlice";
 
 export type JotsState = {
-  jots: Jot[];
-  loading: boolean;
-  error: string | undefined;
-  remoteFetchTime: string | undefined;
+    jots: Jot[];
+    loading: boolean;
+    error: string | undefined;
+    remoteFetchTime: string | undefined;
 };
 
 // Updates new item to local storage and cloud storage if possible.
 export const save = createAsyncThunk(
-  "jots/save",
-  async ({ text, topics }: { text: string; topics: string[] }, thunkApi) => {
-    try {
-      const result = await jotApi.save(text, topics);
-      thunkApi.dispatch(categorizeTopics(result));
-      return result;
-    } catch (error) {
-      console.error(error);
-      return thunkApi.rejectWithValue("Error saving entry.");
+    "jots/save",
+    async ({ text, topics }: { text: string; topics: string[] }, thunkApi) => {
+        try {
+            const result = await jotApi.save(text, topics);
+            thunkApi.dispatch(categorizeTopics(result));
+            return result;
+        } catch (error) {
+            console.error(error);
+            return thunkApi.rejectWithValue("Error saving entry.");
+        }
     }
-  }
 );
 
 // Called on successful sync or to reset fetch time so fetch not blocked by wait period.
 export const setRemoteFetchTime = createAction<string | undefined>(
-  "jots/setRemoteFetchTime"
+    "jots/setRemoteFetchTime"
 );
 
 export const renameTopic = createAsyncThunk<
-  Jot[],
-  { oldTopic: string; newTopic: string },
-  {
-    state: RootState;
-    rejectValue: string;
-    dispatch: AppDispatch;
-  }
+    Jot[],
+    { oldTopic: string; newTopic: string },
+    {
+        state: RootState;
+        rejectValue: string;
+        dispatch: AppDispatch;
+    }
 >("jots/renameTopic", async ({ oldTopic, newTopic }, thunkApi) => {
-  try {
-    const currItems = thunkApi.getState().jots.jots;
-    const updated = await jotApi.renameTopic(currItems, oldTopic, newTopic);
-    thunkApi.dispatch(categorizeTopics(updated));
+    try {
+        const currItems = thunkApi.getState().jots.jots;
+        const updated = await jotApi.renameTopic(currItems, oldTopic, newTopic);
+        thunkApi.dispatch(categorizeTopics(updated));
 
-    return updated;
-  } catch (error) {
-    return thunkApi.rejectWithValue(error);
-  }
+        return updated;
+    } catch (error) {
+        return thunkApi.rejectWithValue(error);
+    }
 });
 
 // Clears local storage data and state.
 export const clearLocally = createAsyncThunk<
-  void,
-  undefined,
-  {
-    dispatch: AppDispatch;
-  }
+    void,
+    undefined,
+    {
+        dispatch: AppDispatch;
+    }
 >("jots/clearLocally", async (_, { dispatch }) => {
-  console.log("JOT THUNK::CLEARING LOCAL DATA");
-  await storageApi.clear(StorageKey.JOTS);
-  await storageApi.clear(StorageKey.REMOTEFETCHTIME);
-  dispatch(categorizeTopics([]));
+    console.log("JOT THUNK::CLEARING LOCAL DATA");
+    await storageApi.clear(StorageKey.JOTS);
+    await storageApi.clear(StorageKey.REMOTEFETCHTIME);
+    dispatch(categorizeTopics([]));
 });
 
 // Syncs data sources and returns the result.
 export const getall = createAsyncThunk<
-  JotGetAll | undefined,
-  undefined,
-  {
-    state: RootState;
-    rejectValue: string;
-    dispatch: AppDispatch;
-  }
+    JotGetAll | undefined,
+    undefined,
+    {
+        state: RootState;
+        rejectValue: string;
+        dispatch: AppDispatch;
+    }
 >("jots/getall", async (_, thunkApi) => {
-  try {
-    console.log("JOT THUNK::GET ALL");
+    try {
+        console.log("JOT THUNK::GET ALL");
 
-    const state = thunkApi.getState();
+        const state = thunkApi.getState();
 
-    // Determine if remote fetch possible.
-    const lastFetchTime =
-      state.jots.remoteFetchTime ??
-      (await storageApi.get<string>(StorageKey.REMOTEFETCHTIME));
+        // Determine if remote fetch possible.
+        const lastFetchTime =
+            state.jots.remoteFetchTime ??
+            (await storageApi.get<string>(StorageKey.REMOTEFETCHTIME));
 
-    if (lastFetchTime) {
-      thunkApi.dispatch(setRemoteFetchTime(lastFetchTime));
+        if (lastFetchTime) {
+            thunkApi.dispatch(setRemoteFetchTime(lastFetchTime));
+        }
+
+        const minWaitTime = dayjs().subtract(
+            MIN_WAIT_TIME_REMOTE_FETCH_MINS,
+            "minute"
+        );
+        const remoteGetWaitPeriodElapsed =
+            lastFetchTime == undefined ||
+            dayjs(lastFetchTime).diff(minWaitTime, "minute") < 0;
+
+        const shouldGetRemote =
+            state.network.isInternetReachable &&
+            remoteGetWaitPeriodElapsed &&
+            state.auth.signedIn;
+
+        console.log(
+            `JOT THUNK::INTERNET? ${state.network.isInternetReachable}`
+        );
+        console.log(`JOT THUNK::REMOTEFETCHTIME? ${lastFetchTime}`);
+        console.log(
+            `JOT THUNK::REMOTEWAITELAPSED? ${remoteGetWaitPeriodElapsed}`
+        );
+        console.log(`JOT THUNK::SIGNEDIN? ${state.auth.signedIn}`);
+        console.log(`JOT THUNK::SHOULDFETCHREMOTE? ${shouldGetRemote}`);
+
+        // Fetch data.
+        const result = await jotApi.getall(shouldGetRemote);
+
+        // Pass data around.
+        if (result.remoteFetch) {
+            storageApi.write<string>(
+                StorageKey.REMOTEFETCHTIME,
+                new Date().toJSON()
+            );
+        }
+
+        thunkApi.dispatch(categorizeTopics(result.items));
+        return result;
+    } catch (error) {
+        console.error(error);
+        return thunkApi.rejectWithValue("Error getting data.");
     }
-
-    const minWaitTime = dayjs().subtract(
-      MIN_WAIT_TIME_REMOTE_FETCH_MINS,
-      "minute"
-    );
-    const remoteGetWaitPeriodElapsed =
-      lastFetchTime == undefined ||
-      dayjs(lastFetchTime).diff(minWaitTime, "minute") < 0;
-
-    const shouldGetRemote =
-      state.network.isInternetReachable &&
-      remoteGetWaitPeriodElapsed &&
-      state.auth.signedIn;
-
-    console.log(`JOT THUNK::INTERNET? ${state.network.isInternetReachable}`);
-    console.log(`JOT THUNK::REMOTEFETCHTIME? ${lastFetchTime}`);
-    console.log(`JOT THUNK::REMOTEWAITELAPSED? ${remoteGetWaitPeriodElapsed}`);
-    console.log(`JOT THUNK::SIGNEDIN? ${state.auth.signedIn}`);
-    console.log(`JOT THUNK::SHOULDFETCHREMOTE? ${shouldGetRemote}`);
-
-    // Fetch data.
-    const result = await jotApi.getall(shouldGetRemote);
-
-    // Pass data around.
-    if (result.remoteFetch) {
-      storageApi.write<string>(StorageKey.REMOTEFETCHTIME, new Date().toJSON());
-    }
-
-    thunkApi.dispatch(categorizeTopics(result.items));
-    return result;
-  } catch (error) {
-    console.error(error);
-    return thunkApi.rejectWithValue("Error getting data.");
-  }
 });
 
 export const jotsInitialState: JotsState = {
-  jots: [],
-  loading: false,
-  error: undefined,
-  remoteFetchTime: undefined,
+    jots: [],
+    loading: false,
+    error: undefined,
+    remoteFetchTime: undefined,
 };
 
 export const jotSlice = createSlice({
-  name: "jots",
-  initialState: jotsInitialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(getall.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getall.fulfilled, (state, { payload }) => {
-        console.log(`JOT REDUCER::GETALL PAYLOAD`);
-        console.log(payload);
-        state.loading = false;
+    name: "jots",
+    initialState: jotsInitialState,
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(getall.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getall.fulfilled, (state, { payload }) => {
+                console.log(`JOT REDUCER::GETALL PAYLOAD`);
+                console.log(payload);
+                state.loading = false;
 
-        if (!payload) {
-          return;
-        }
+                if (!payload) {
+                    return;
+                }
 
-        if (jotApi.itemsAreEqual(state.jots, payload.items)) {
-          return;
-        }
+                if (jotApi.itemsAreEqual(state.jots, payload.items)) {
+                    return;
+                }
 
-        state.jots = payload.items;
-        if (payload.remoteFetch) {
-          state.remoteFetchTime = new Date().toJSON();
-        }
-      })
-      .addCase(getall.rejected, (state, { error }) => {
-        state.error = error.message;
-        state.loading = false;
-      })
-      .addCase(save.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(save.fulfilled, (state, { payload }) => {
-        console.log("JOT REDUCER::SET FULFILLED PAYLOAD");
-        console.log(payload);
-        state.jots = payload;
-        state.loading = false;
-      })
-      .addCase(save.rejected, (state, { error }) => {
-        state.error = error.message;
-        state.loading = false;
-      })
-      .addCase(setRemoteFetchTime, (state, { payload }) => {
-        if (!payload) {
-          return (state.remoteFetchTime = undefined);
-        }
+                state.jots = payload.items;
+                if (payload.remoteFetch) {
+                    state.remoteFetchTime = new Date().toJSON();
+                }
+            })
+            .addCase(getall.rejected, (state, { error }) => {
+                state.error = error.message;
+                state.loading = false;
+            })
+            .addCase(save.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(save.fulfilled, (state, { payload }) => {
+                console.log("JOT REDUCER::SET FULFILLED PAYLOAD");
+                console.log(payload);
+                state.jots = payload;
+                state.loading = false;
+            })
+            .addCase(save.rejected, (state, { error }) => {
+                state.error = error.message;
+                state.loading = false;
+            })
+            .addCase(setRemoteFetchTime, (state, { payload }) => {
+                if (!payload) {
+                    return (state.remoteFetchTime = undefined);
+                }
 
-        if (
-          state.remoteFetchTime &&
-          dayjs(payload).diff(state.remoteFetchTime, "minute") == 0
-        ) {
-          return;
-        }
+                if (
+                    state.remoteFetchTime &&
+                    dayjs(payload).diff(state.remoteFetchTime, "minute") == 0
+                ) {
+                    return;
+                }
 
-        state.remoteFetchTime = payload;
-      })
-      .addCase(clearLocally.fulfilled, (state) => {
-        state.remoteFetchTime = undefined;
-        state.jots = [];
-      })
-      .addCase(renameTopic.fulfilled, (state, { payload }) => {
-        state.jots = payload;
-      });
-  },
+                state.remoteFetchTime = payload;
+            })
+            .addCase(clearLocally.fulfilled, (state) => {
+                state.remoteFetchTime = undefined;
+                state.jots = [];
+            })
+            .addCase(renameTopic.fulfilled, (state, { payload }) => {
+                state.jots = payload;
+            });
+    },
 });
 
 export const selectJots = (state: RootState): JotsState => {
-  return state.jots;
+    return state.jots;
 };
 
 export default jotSlice.reducer;

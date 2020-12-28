@@ -10,23 +10,23 @@ import { useAppDispatch } from "@store/index";
 import TopicsScreen from "./TopicsScreen";
 
 const AppNavigator = (): ReactElement => {
-  const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    (async () => {
-      console.log("APP NAV::DISPATCH CHECKAUTH EFFECT");
-      await dispatch(checkUserAuth());
-      dispatch(getall());
-    })();
-  }, []);
+    useEffect(() => {
+        (async () => {
+            console.log("APP NAV::DISPATCH CHECKAUTH EFFECT");
+            await dispatch(checkUserAuth());
+            dispatch(getall());
+        })();
+    }, []);
 
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Jot" component={JotScreen} />
-      <Tab.Screen name="Topics" component={TopicsScreen} />
-      <Tab.Screen name="History" component={HistoryScreen} />
-    </Tab.Navigator>
-  );
+    return (
+        <Tab.Navigator>
+            <Tab.Screen name="Jot" component={JotScreen} />
+            <Tab.Screen name="Topics" component={TopicsScreen} />
+            <Tab.Screen name="History" component={HistoryScreen} />
+        </Tab.Navigator>
+    );
 };
 
 export default AppNavigator;

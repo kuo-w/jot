@@ -8,30 +8,30 @@ https://github.com/react-native-netinfo/react-native-netinfo#netinfostate
 */
 
 export type NetworkState = {
-  isInternetReachable: boolean;
-  loading: boolean;
+    isInternetReachable: boolean;
+    loading: boolean;
 };
 
 export const setNetState = createAction<NetInfoState>("network/setNetState");
 
 export const networkInitialState: NetworkState = {
-  isInternetReachable: false,
-  loading: false,
+    isInternetReachable: false,
+    loading: false,
 };
 
 const networkSlice = createSlice({
-  name: "network",
-  initialState: networkInitialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(setNetState, (state, { payload }) => {
-      console.log("NETWORK REDUCER::NETSTATE CHANGE PAYLOAD");
-      console.log(payload);
+    name: "network",
+    initialState: networkInitialState,
+    reducers: {},
+    extraReducers: (builder) => {
+        builder.addCase(setNetState, (state, { payload }) => {
+            console.log("NETWORK REDUCER::NETSTATE CHANGE PAYLOAD");
+            console.log(payload);
 
-      state.loading = false;
-      state.isInternetReachable = <boolean>payload.isInternetReachable;
-    });
-  },
+            state.loading = false;
+            state.isInternetReachable = <boolean>payload.isInternetReachable;
+        });
+    },
 });
 
 export const selectNetwork = (state: RootState): NetworkState => state.network;

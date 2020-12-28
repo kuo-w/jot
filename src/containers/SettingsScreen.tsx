@@ -11,45 +11,45 @@ import SettingsOptionButton from "@components/Settings/SettingsOptionButton";
 import { clearLocally } from "@store/jotSlice";
 
 type NavigationProp = CompositeNavigationProp<
-  BottomTabNavigationProp<AppNavigatorParamList, "Settings">,
-  StackNavigationProp<RootStackParamList>
+    BottomTabNavigationProp<AppNavigatorParamList, "Settings">,
+    StackNavigationProp<RootStackParamList>
 >;
 
 type Props = {
-  navigation: NavigationProp;
+    navigation: NavigationProp;
 };
 
 const SettingsScreen = ({ navigation }: Props): ReactElement => {
-  const { signedIn } = useSelector(selectAuth);
-  const dispatch = useDispatch();
+    const { signedIn } = useSelector(selectAuth);
+    const dispatch = useDispatch();
 
-  return (
-    <View style={styles.container}>
-      <SettingsOptionButton
-        title={!signedIn ? "Sign-in" : "Logout"}
-        onPressAction={
-          !signedIn
-            ? () => navigation.navigate("SignInOptions")
-            : () => {
-                console.log("SETTINGSCREEN::LOGOUT");
-                dispatch(logout());
-              }
-        }
-      ></SettingsOptionButton>
-      <SettingsOptionButton
-        title="Clear Local Data"
-        onPressAction={() => dispatch(clearLocally())}
-      ></SettingsOptionButton>
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <SettingsOptionButton
+                title={!signedIn ? "Sign-in" : "Logout"}
+                onPressAction={
+                    !signedIn
+                        ? () => navigation.navigate("SignInOptions")
+                        : () => {
+                              console.log("SETTINGSCREEN::LOGOUT");
+                              dispatch(logout());
+                          }
+                }
+            ></SettingsOptionButton>
+            <SettingsOptionButton
+                title="Clear Local Data"
+                onPressAction={() => dispatch(clearLocally())}
+            ></SettingsOptionButton>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "80%",
-    alignSelf: "center",
-  },
+    container: {
+        flex: 1,
+        width: "80%",
+        alignSelf: "center",
+    },
 });
 
 export default SettingsScreen;

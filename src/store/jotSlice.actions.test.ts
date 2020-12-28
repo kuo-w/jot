@@ -5,7 +5,7 @@ import configureMockStore from "redux-mock-store";
 import thunk from "redux-thunk";
 import { AppDispatch, RootState } from ".";
 import appInitialState, {
-  PartialRootState,
+    PartialRootState,
 } from "./__mocks__/storeInitialState";
 import { getall } from "./jotSlice";
 import { JotGetAll } from "types";
@@ -22,79 +22,79 @@ const mockedStorageApi = mocked(storageApi, true);
 const mockedJotApi = mocked(jotApi, true);
 
 afterEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 });
 
 let getAllResult: JotGetAll = {
-  items: [],
-  remoteFetch: false,
+    items: [],
+    remoteFetch: false,
 };
 
 describe("getall", () => {
-  const assertDidRemoteFetch = async (
-    expectedDidRemoteFetch: boolean,
-    state: PartialRootState,
-    storageApiRemoteFetchTime?: Date
-  ) => {
-    const store = mockStore(appInitialState(state));
-    mocked(mockedJotApi.getall).mockResolvedValue(getAllResult);
-    if (storageApiRemoteFetchTime) {
-      mocked(mockedStorageApi.get).mockResolvedValue(
-        storageApiRemoteFetchTime.toJSON()
-      );
-    }
+    const assertDidRemoteFetch = async (
+        expectedDidRemoteFetch: boolean,
+        state: PartialRootState,
+        storageApiRemoteFetchTime?: Date
+    ) => {
+        const store = mockStore(appInitialState(state));
+        mocked(mockedJotApi.getall).mockResolvedValue(getAllResult);
+        if (storageApiRemoteFetchTime) {
+            mocked(mockedStorageApi.get).mockResolvedValue(
+                storageApiRemoteFetchTime.toJSON()
+            );
+        }
 
-    await store.dispatch(getall());
-    expect(jotApi.getall).lastCalledWith(expectedDidRemoteFetch);
-  };
+        await store.dispatch(getall());
+        expect(jotApi.getall).lastCalledWith(expectedDidRemoteFetch);
+    };
 
-  test("do remote fetch", async () => {
-    await assertDidRemoteFetch(true, {
-      network: { isInternetReachable: true },
-      auth: { signedIn: true },
+    test("do remote fetch", async () => {
+        await assertDidRemoteFetch(true, {
+            network: { isInternetReachable: true },
+            auth: { signedIn: true },
+        });
+
+        await assertDidRemoteFetch(
+            true,
+            {
+                network: { isInternetReachable: true },
+                auth: { signedIn: true },
+            },
+            dayjs()
+                .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS + 1, "minute")
+                .toDate()
+        );
+
+        await assertDidRemoteFetch(true, {
+            network: { isInternetReachable: true },
+            auth: { signedIn: true },
+            jots: {
+                remoteFetchTime: dayjs()
+                    .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS + 1, "minute")
+                    .toJSON(),
+            },
+        });
     });
 
-    await assertDidRemoteFetch(
-      true,
-      {
-        network: { isInternetReachable: true },
-        auth: { signedIn: true },
-      },
-      dayjs()
-        .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS + 1, "minute")
-        .toDate()
-    );
+    test("won't remote fetch", async () => {
+        await assertDidRemoteFetch(false, {
+            network: { isInternetReachable: false },
+            auth: { signedIn: true },
+        });
 
-    await assertDidRemoteFetch(true, {
-      network: { isInternetReachable: true },
-      auth: { signedIn: true },
-      jots: {
-        remoteFetchTime: dayjs()
-          .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS + 1, "minute")
-          .toJSON(),
-      },
-    });
-  });
+        await assertDidRemoteFetch(false, {
+            network: { isInternetReachable: true },
+            auth: { signedIn: false },
+        });
 
-  test("won't remote fetch", async () => {
-    await assertDidRemoteFetch(false, {
-      network: { isInternetReachable: false },
-      auth: { signedIn: true },
+        await assertDidRemoteFetch(false, {
+            network: { isInternetReachable: true },
+            auth: { signedIn: true },
+            jots: {
+                remoteFetchTime: dayjs()
+                    .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS - 1, "minute")
+                    .toJSON(),
+            },
+        });
     });
-
-    await assertDidRemoteFetch(false, {
-      network: { isInternetReachable: true },
-      auth: { signedIn: false },
-    });
-
-    await assertDidRemoteFetch(false, {
-      network: { isInternetReachable: true },
-      auth: { signedIn: true },
-      jots: {
-        remoteFetchTime: dayjs()
-          .subtract(MIN_WAIT_TIME_REMOTE_FETCH_MINS - 1, "minute")
-          .toJSON(),
-      },
-    });
-  });
 });

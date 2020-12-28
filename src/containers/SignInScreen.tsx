@@ -10,54 +10,58 @@ import { textSecondaryColor } from "colors";
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "SignIn">;
 
 type Props = {
-  navigation: NavigationProp;
+    navigation: NavigationProp;
 };
 
 const SignInScreen = ({ navigation }: Props): ReactElement => {
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const navigateHome = () => {
-    console.log("SIGNIN SCREEN::CALLBACK ON LOGIN SUCCESS");
-    navigation.navigate("Jot");
-  };
+    const navigateHome = () => {
+        console.log("SIGNIN SCREEN::CALLBACK ON LOGIN SUCCESS");
+        navigation.navigate("Jot");
+    };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Login</Text>
-      <AuthOptionButton
-        title="Google"
-        onPress={() =>
-          dispatch(Login({ method: "Google", onSuccess: navigateHome }))
-        }
-        iconName="logo-google"
-        color="#eee"
-        bgColor="#ba2d65"
-      ></AuthOptionButton>
-      <AuthOptionButton
-        title="Guest"
-        onPress={() =>
-          dispatch(Login({ method: "Anonymous", onSuccess: navigateHome }))
-        }
-        iconName="md-person"
-        color="#3B3B3B"
-        bgColor="#eee"
-      ></AuthOptionButton>
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <Text style={styles.header}>Login</Text>
+            <AuthOptionButton
+                title="Google"
+                onPress={() =>
+                    dispatch(
+                        Login({ method: "Google", onSuccess: navigateHome })
+                    )
+                }
+                iconName="logo-google"
+                color="#eee"
+                bgColor="#ba2d65"
+            ></AuthOptionButton>
+            <AuthOptionButton
+                title="Guest"
+                onPress={() =>
+                    dispatch(
+                        Login({ method: "Anonymous", onSuccess: navigateHome })
+                    )
+                }
+                iconName="md-person"
+                color="#3B3B3B"
+                bgColor="#eee"
+            ></AuthOptionButton>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    color: textSecondaryColor,
-    fontSize: 40,
-    marginBottom: 20,
-    fontWeight: "bold",
-  },
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "black",
-  },
+    header: {
+        color: textSecondaryColor,
+        fontSize: 40,
+        marginBottom: 20,
+        fontWeight: "bold",
+    },
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "black",
+    },
 });
 export default SignInScreen;
