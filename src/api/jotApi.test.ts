@@ -31,6 +31,7 @@ describe("getting all", () => {
         remote: Jot[] | undefined
     ) => {
         mockApiGetReturns(local, remote);
+
         const result = await jotApi.getall(true);
         expect(result).toEqual({
             items: expected,
@@ -51,7 +52,7 @@ describe("getting all", () => {
     };
 
     test("with same data for remote and local", async () => {
-        await _assertGetAll([jot1], true, [jot1], [jot1]);
+        await _assertGetAll([jot1], false, [jot1], [jot1]);
         _assertNotSets([jot1]);
     });
 
@@ -95,6 +96,19 @@ describe("getting all", () => {
         await _assertGetAll([jot1, jot2, jot3], true, [jot1, jot3, jot2], []);
         _assertSets([jot1, jot3, jot2]);
         _assertNotSets([]);
+    });
+});
+
+describe("getting unsynced", () => {
+    test("sync to local", async () => {
+        mocked(storageApi.get).mockResolvedValue([jot1]);
+        jotApi.initializeApi(mockRemoteApi([], ["777"]));
+
+        const result = await jotApi.getall(true);
+        expect(result).toEqual({
+            items: [jot1],
+            remoteFetch: true,
+        });
     });
 });
 

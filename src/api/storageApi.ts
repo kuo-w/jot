@@ -42,16 +42,6 @@ const pushItem = async <T>(key: StorageKey, item: T): Promise<T[]> => {
         if (items == undefined) {
             items = [];
         }
-        console.log("STORAGE API::PUSH ITEM");
-        console.log(item);
-
-        console.log("STORAGE API::ORIGINAL LIST");
-        console.log(items);
-
-        items.push(item);
-
-        console.log("STORAGE API::UPDATED LIST");
-        console.log(items);
 
         await write<T[]>(key, <T[]>items);
 
@@ -64,7 +54,6 @@ const pushItem = async <T>(key: StorageKey, item: T): Promise<T[]> => {
 const write = async <T>(key: StorageKey, item: T): Promise<void> => {
     try {
         console.log(`STORAGE API::WRITE ITEM ON KEY ${key}`);
-        console.log(item);
 
         await AsyncStorage.setItem(key, JSON.stringify(item));
     } catch (error) {

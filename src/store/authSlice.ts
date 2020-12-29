@@ -62,9 +62,9 @@ export const Login = createAsyncThunk<
     thunkApi.dispatch(setRemoteFetchTime(undefined));
     authApi.actionOnAuth(() => {
         console.log("AUTH API::IN CALLBACK");
-        onSuccess();
         thunkApi.dispatch(setSignedIn());
         thunkApi.dispatch(getall());
+        onSuccess();
     });
 
     return result;

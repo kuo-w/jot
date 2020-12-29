@@ -4,9 +4,7 @@ import { AppDispatch, RootState } from "@store/index";
 import { Jot, JotGetAll } from "types";
 import storageApi, { StorageKey } from "@api/storageApi";
 import dayjs from "dayjs";
-import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 import { categorizeTopics } from "./topicSlice";
-import thunk from "redux-thunk";
 
 export type JotsState = {
     jots: Jot[];
@@ -105,39 +103,11 @@ export const getall = createAsyncThunk<
 
         const state = thunkApi.getState();
 
-        // Determine if remote fetch possible.
-        const lastFetchTime =
-            state.jots.remoteFetchTime ??
-            (await storageApi.get<string>(StorageKey.REMOTEFETCHTIME));
-
-        if (lastFetchTime) {
-            // For when app initializes
-            thunkApi.dispatch(setRemoteFetchTime(lastFetchTime));
-        }
-
-        const minWaitTime = dayjs().subtract(
-            MIN_WAIT_TIME_REMOTE_FETCH_MINS,
-            "minute"
-        );
-
-        const remoteGetWaitPeriodElapsed =
-            lastFetchTime == undefined ||
-            dayjs(lastFetchTime).diff(minWaitTime, "minute") < 0;
-
         const shouldGetRemote =
-            state.network.isInternetReachable &&
-            remoteGetWaitPeriodElapsed &&
-            state.auth.signedIn;
+            state.network.isInternetReachable && state.auth.signedIn;
 
-        console.log(
-            `JOT THUNK::INTERNET? ${state.network.isInternetReachable}`
-        );
-        console.log(`JOT THUNK::REMOTEFETCHTIME? ${lastFetchTime}`);
-        console.log(
-            `JOT THUNK::REMOTEWAITELAPSED? ${remoteGetWaitPeriodElapsed}`
-        );
-        console.log(`JOT THUNK::SIGNEDIN? ${state.auth.signedIn}`);
-        console.log(`JOT THUNK::SHOULDFETCHREMOTE? ${shouldGetRemote}`);
+        console.log("JOT THUNK::FETCH REMOTE?");
+        console.log(shouldGetRemote);
 
         // Fetch data.
         const result = await jotApi.getall(shouldGetRemote);
@@ -175,8 +145,7 @@ export const jotSlice = createSlice({
                 state.loading = true;
             })
             .addCase(getall.fulfilled, (state, { payload }) => {
-                console.log(`JOT REDUCER::GETALL PAYLOAD`);
-                console.log(payload);
+                console.log(`JOT REDUCER::GETALL`);
                 state.loading = false;
 
                 if (!payload) {

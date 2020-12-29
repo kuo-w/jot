@@ -30,12 +30,18 @@ const _getUniqueByGuid = (items: Jot[]): Jot[] => {
     return [...result];
 };
 
-const _getItemsOnlyLocal = (local: Jot[], remote: Jot[]): Jot[] => {
-    const remote_ = new Set(remote.map((i) => i.guid));
-    const local_ = new Set(local.map((i) => i.guid));
-    const localOnly = new Set([...local_].filter((i) => !remote_.has(i)));
+const _setDifference = (a: string[], b: string[]) => {
+    const A = new Set(a);
+    const B = new Set(b);
+    return [...new Set([...A].filter((i) => !B.has(i)))];
+};
 
-    return [...local].filter((i) => localOnly.has(i.guid));
+const _getItemsOnlyLocal = (local: Jot[], remote: Jot[]): Jot[] => {
+    const remote_ = remote.map((i) => i.guid);
+    const local_ = local.map((i) => i.guid);
+    const localOnly = _setDifference(local_, remote_);
+
+    return [...local].filter((i) => localOnly.includes(i.guid));
 };
 
 const _syncWithConnected = async (
@@ -53,22 +59,33 @@ const _syncWithConnected = async (
         };
     }
 
-    console.log("JOT API::SYNCING");
-    const result = await Promise.all([
-        _remoteApi.getAll(),
-        storage.get<Jot[]>(StorageKey.JOTS),
-    ]);
-    const remote = result[0];
-    let local = result[1];
+    console.log("JOT API::REMOTEIDS CHECK");
 
-    console.log("JOT API::REMOTE RESULT");
-    console.log(remote);
-    console.log("JOT API::LOCAL RESULT");
-    console.log(local);
+    const tracker = await _remoteApi.getIds();
+    const remoteIds = tracker.ids;
 
+    console.log("JOT API::REMOTEIDS");
+    console.log(remoteIds.length);
+
+    let local = await storage.get<Jot[]>(StorageKey.JOTS);
     if (local == undefined) {
         local = [];
     }
+
+    const totalLength = [
+        ...new Set([...local.map((l) => l.guid), ...remoteIds]),
+    ].length;
+    if (totalLength === local.length && totalLength == remoteIds.length) {
+        console.log("JOT API::RETURNING ONLY LOCAL");
+        return { items: local, remoteFetch: false };
+    }
+
+    const remote = await _remoteApi.getAll();
+
+    console.log("JOT API::REMOTE RESULT");
+    console.log(remote?.length);
+    console.log("JOT API::LOCAL RESULT");
+    console.log(local.length);
 
     if (remote == undefined) {
         return { items: local, remoteFetch: false };
@@ -77,7 +94,7 @@ const _syncWithConnected = async (
     const combined = _getUniqueByGuid(remote.concat(local));
 
     console.log("JOT API::COMBINED");
-    console.log(combined);
+    console.log(combined.length);
 
     const itemsToUpload = _getItemsOnlyLocal(local, remote);
 
@@ -87,6 +104,7 @@ const _syncWithConnected = async (
     console.log("JOT API::UPLOAD ITEMS");
     console.log(itemsToUpload);
 
+    _remoteApi.setIds(combined);
     await storage.write<Jot[]>(StorageKey.JOTS, combined);
 
     return { items: combined, remoteFetch: true };
@@ -185,7 +203,11 @@ const save = async (
 
     const result = await Promise.all(tasks);
 
-    return _sort(result[0]);
+    const updated = _sort(result[0]);
+
+    _remoteApi?.setIds(updated);
+
+    return updated;
 };
 
 const itemsAreEqual = (a: Jot[], b: Jot[]) => {

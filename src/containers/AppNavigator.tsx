@@ -15,7 +15,7 @@ const AppNavigator = (): ReactElement => {
         (async () => {
             console.log("APP NAV::DISPATCH CHECKAUTH EFFECT");
             await dispatch(checkUserAuth());
-            dispatch(getall());
+            await dispatch(getall());
         })();
     }, []);
 

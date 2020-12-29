@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { TouchableOpacity, ViewStyle } from "react-native";
+import { Dimensions, TouchableOpacity, ViewStyle } from "react-native";
 import {
     appForegroundColor,
     appForegroundSecondColor,
@@ -9,6 +9,7 @@ import {
 } from "colors";
 import { IconName } from "types";
 import Fade from "./Fade";
+import useKeyboard from "hooks/useKeyboard";
 
 type FabPositionStyle = {
     primary: ViewStyle;
@@ -19,6 +20,7 @@ const styling: FabPositionStyle = {
     primary: {
         width: 60,
         bottom: 20,
+        top: Dimensions.get("window").height * 0.8,
         right: 25,
         height: 60,
         backgroundColor: appForegroundColor,
@@ -27,6 +29,7 @@ const styling: FabPositionStyle = {
     secondary: {
         width: 52,
         bottom: 100,
+        top: Dimensions.get("window").height * 0.7,
         right: 29,
         height: 52,
         backgroundColor: appForegroundSecondColor,
@@ -64,10 +67,14 @@ const Icon = (name: IconName, position: keyof FabPositionStyle) => {
 };
 
 const Fab = ({ onPress, icon, position = "primary", visible }: Props) => {
+    const kbVisible = useKeyboard();
+
     return (
         <Fade
             style={{
                 ...styling[position],
+                bottom: kbVisible ? styling[position]["bottom"] : undefined,
+                top: kbVisible ? undefined : styling[position]["top"],
                 alignItems: "center",
                 justifyContent: "center",
                 position: "absolute",
@@ -75,13 +82,7 @@ const Fab = ({ onPress, icon, position = "primary", visible }: Props) => {
             }}
             visible={visible}
         >
-            <TouchableOpacity
-                onPress={onPress}
-                style={{
-                    borderWidth: 1,
-                    borderColor: "rgba(0,0,0,0.2)",
-                }}
-            >
+            <TouchableOpacity onPress={onPress}>
                 {Icon(icon, position)}
             </TouchableOpacity>
         </Fade>

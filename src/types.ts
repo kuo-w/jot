@@ -17,6 +17,10 @@ export type FirebaseUser = {
     isAnonymous: boolean;
 };
 
+export type Tracker = {
+    ids: string[];
+};
+
 export type Topic = {
     name: string;
     count: number;
@@ -70,6 +74,8 @@ export type RootStackParamList = {
 };
 
 export type RemoteApi = {
+    getIds: () => Promise<Tracker>;
+    setIds: (items: Jot[]) => Promise<void>;
     getAll: () => Promise<Jot[] | undefined>;
     set: (jot: Jot) => Promise<void>;
     setUser: (user: GoogleUser | FirebaseUser) => Promise<void>;

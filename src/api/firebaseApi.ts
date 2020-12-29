@@ -3,7 +3,13 @@ import "@firebase/firestore";
 import type { Timestamp } from "@firebase/firestore-types";
 
 import { GoogleUser } from "expo-google-app-auth/src/Google";
-import { CreatedAtTimestamp, FirebaseUser, Jot, RemoteApi } from "types";
+import {
+    CreatedAtTimestamp,
+    FirebaseUser,
+    Jot,
+    RemoteApi,
+    Tracker,
+} from "types";
 
 const jotConverter = {
     toFirestore(jot: Jot): firebase.firestore.DocumentData {
@@ -23,27 +29,26 @@ const jotConverter = {
 };
 
 let jotsRef: firebase.firestore.CollectionReference<Jot>;
+let trackerRef: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
 let usersRef: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
 
-if (firebase.apps.length > 0) {
-    const db = firebase.firestore();
-    jotsRef = db.collection("/jots").withConverter(jotConverter);
-    usersRef = db.collection("/users");
-}
-
 const initializeRefs = () => {
-    if (jotsRef || usersRef) {
+    if (jotsRef || usersRef || trackerRef) {
         return;
     }
 
     const db = firebase.firestore();
     jotsRef = db.collection("/jots").withConverter(jotConverter);
     usersRef = db.collection("/users");
+    trackerRef = db.collection("/tracker");
 };
 
 const _uid = (): string | undefined => {
     try {
-        return firebase.auth().currentUser?.uid;
+        const uid = firebase.auth().currentUser?.uid;
+        console.log(`Firebase UID - ${uid}`);
+
+        return uid;
     } catch (error) {
         console.error(`Error getting user UID: ${error}`);
         return undefined;
@@ -132,11 +137,50 @@ const logout = async (): Promise<void> => {
     }
 };
 
+const getIds = async (): Promise<Tracker> => {
+    if (!_uid() || !trackerRef) {
+        console.log(`Firebase - early return getting tracker`);
+        return { ids: [] };
+    }
+
+    try {
+        console.log(`Firebase - getting tracker`);
+        const ref = await trackerRef.doc(_uid()).get();
+        if (!ref.exists) return { ids: [] };
+
+        const data = await ref.data();
+        if (data == undefined) return { ids: [] };
+
+        return {
+            ids: data["ids"],
+        };
+    } catch (error) {
+        console.error(`Firebase - tracker get error`);
+        return {
+            ids: [],
+        };
+    }
+};
+
+const setIds = async (items: Jot[]): Promise<void> => {
+    if (!_uid() || !trackerRef) return;
+
+    try {
+        await trackerRef
+            .doc(_uid())
+            .set({ ids: [...new Set(items.map((i) => i.guid))] });
+    } catch (error) {
+        console.error(`Firebase - tracker write error`);
+    }
+};
+
 const api: RemoteApi = {
     getAll: get,
     set,
     setUser,
     update,
+    getIds,
+    setIds,
 };
 
 export default { initializeRefs, auth, logout };
