@@ -38,7 +38,7 @@ const FIREBASE_CONFIG = {
     appId,
 };
 
-const MIN_WAIT_TIME_REMOTE_FETCH_MINS = 60;
+const MIN_WAIT_TIME_REMOTE_FETCH_MINS = 525600; // 1 year
 
 const STUB_REMOTE_API = true;
 

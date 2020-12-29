@@ -1,4 +1,10 @@
-import { Jot, RemoteApi, JotGetAll, ShouldFetchRemote } from "types";
+import {
+    Jot,
+    RemoteApi,
+    JotGetAll,
+    ShouldFetchRemote,
+    JotUpdateFields,
+} from "types";
 import storage, { StorageKey } from "./storageApi";
 import { v4 as uuidv4 } from "uuid";
 
@@ -101,26 +107,43 @@ const getall = async (
     return result;
 };
 
+const edit = async (item: Jot, edits: JotUpdateFields) => {
+    const items = await storage.get<Jot[]>(StorageKey.JOTS);
+    if (items == undefined) return [];
+
+    const deleteIndex = items.findIndex((i) => i.guid == item.guid);
+    const modified = { ...item, ...edits };
+    items.splice(deleteIndex, 1, modified);
+
+    await storage.write<Jot[]>(StorageKey.JOTS, items);
+    if (_remoteApi) await _remoteApi.set(modified);
+
+    return items;
+};
+
 const renameTopic = async (
     items: Jot[],
     oldTopic: string,
     newTopic: string
 ): Promise<Jot[]> => {
+    oldTopic = oldTopic.toLowerCase();
+    newTopic = newTopic.toLowerCase();
+
     const copies = [...items];
 
     let updated: Jot[] = [];
     let result = copies.map((item) => {
-        const idxTopic = item.topics?.indexOf(oldTopic);
-        if (idxTopic == undefined || item.topics == undefined) {
-            return item;
-        }
+        if (item.topics == undefined) return item;
+
+        const idxTopic = item.topics.indexOf(oldTopic);
+        if (idxTopic == -1) return item;
 
         let topicsCopy = [...item.topics];
         topicsCopy.splice(idxTopic, 1, newTopic);
 
         let temp: Jot = {
             ...item,
-            topics: topicsCopy,
+            topics: [...new Set(topicsCopy)],
         };
         updated.push(temp);
         return temp;
@@ -140,12 +163,16 @@ const renameTopic = async (
     return result;
 };
 
-const save = async (text: string, topics: string[] = []): Promise<Jot[]> => {
+const save = async (
+    text: string,
+    topics: string[] = [],
+    guid?: string
+): Promise<Jot[]> => {
     const item: Jot = {
         text,
-        topics,
+        topics: topics.map((t) => t.toLowerCase()),
         createdAt: new Date().toJSON(),
-        guid: uuidv4(),
+        guid: guid ?? uuidv4(),
     };
 
     const tasks: (Promise<any> | Promise<void>)[] = [
@@ -174,4 +201,11 @@ const itemsAreEqual = (a: Jot[], b: Jot[]) => {
     );
 };
 
-export default { save, getall, initializeApi, itemsAreEqual, renameTopic };
+export default {
+    save,
+    edit,
+    getall,
+    initializeApi,
+    itemsAreEqual,
+    renameTopic,
+};

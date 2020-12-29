@@ -1,43 +1,58 @@
 import { appBgColor, textTertiaryColor } from "colors";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
+import TopicInputItem from "./TopicInputItem";
 
 type Props = {
-    onSubmit: (text: string) => void;
-    initialValue?: string;
-    onTextChange?: (text: string) => void;
-    multi?: boolean;
+    onSubmit: () => void;
+    value: string;
+    onTextChange: (text: string) => void;
     onKeyboardHide?: () => void;
+
+    // To show multiple topic names.
+    multi?: boolean;
+    onItemPress?: (text: string) => void;
+    topics?: string[];
 };
 
 const TopicInput = ({
     onSubmit,
-    initialValue = "",
+    value = "",
     multi = false,
     onTextChange = () => {},
     onKeyboardHide = () => {},
+    onItemPress = () => {},
+    topics = [],
 }: Props) => {
-    const [_inputText, _setInputText] = useState(initialValue);
-    const [_topics, _setTopics] = useState<string[]>([]);
-
     // Hide topic input on keyboard hide.
     useEffect(() => {
-        Keyboard.addListener("keyboardDidHide", () => {
-            onKeyboardHide();
-        });
+        Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
+
+        return () =>
+            Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
     }, []);
 
+    const _keyboardDidHide = () => {
+        onKeyboardHide();
+    };
+
     const submit = () => {
-        onSubmit(_inputText);
+        onSubmit();
         onTextChange("");
-        _setTopics([..._topics, _inputText.toLowerCase()]);
-        _setInputText("");
     };
 
     return (
         <View style={styles.container}>
             {multi && (
-                <Text style={styles.joined}>[ {`${_topics.join(", ")}`} ]</Text>
+                <View style={styles.items}>
+                    {topics.map((t) => (
+                        <TopicInputItem
+                            key={t}
+                            name={t}
+                            onPress={onItemPress}
+                        ></TopicInputItem>
+                    ))}
+                </View>
             )}
             <View style={{ flexDirection: "row" }}>
                 <Text style={{ color: textTertiaryColor, fontSize: 40 }}>
@@ -49,11 +64,10 @@ const TopicInput = ({
                         fontSize: 40,
                     }}
                     onChangeText={(text) => {
-                        _setInputText(text);
                         onTextChange(text);
                     }}
                     onSubmitEditing={() => submit()}
-                    value={_inputText}
+                    value={value}
                     autoFocus={true}
                     blurOnSubmit={false}
                     onBlur={() => submit()}
@@ -75,11 +89,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    joined: {
+    items: {
+        flexWrap: "wrap",
         position: "absolute",
+        flexDirection: "row",
         top: 20,
         left: 20,
-        color: textTertiaryColor,
         fontSize: 30,
         marginBottom: 10,
     },

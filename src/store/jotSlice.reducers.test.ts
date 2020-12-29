@@ -45,7 +45,7 @@ describe("fulfilled", () => {
     });
 
     test("updates remoteFetchTime", () => {
-        const date = new Date().toJSON();
+        const testStart = new Date();
         const resultStateDidFetch = reducer(
             appInitialState().jots,
             fulfilled([jot1, jot2], true)
@@ -56,7 +56,9 @@ describe("fulfilled", () => {
             fulfilled([jot1, jot2])
         );
 
-        expect(resultStateDidFetch.remoteFetchTime).toEqual(date);
+        expect(
+            Date.parse(<string>resultStateDidFetch.remoteFetchTime)
+        ).toBeGreaterThanOrEqual(testStart.getTime());
         expect(resultStateDidNotFetch.remoteFetchTime).toEqual(undefined);
     });
 });

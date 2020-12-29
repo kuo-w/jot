@@ -1,16 +1,27 @@
 import React from "react";
-import { Text, View } from "react-native";
-import { appForegroundColor, textColor, textSecondaryColor } from "colors";
-import { Jot } from "types";
+import { Pressable, Text, View } from "react-native";
+import { textColor, textSecondaryColor } from "colors";
+import { AppNavigatorParamList, Jot } from "types";
 import dayjs from "dayjs";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 type Props = {
     item: Jot;
 };
 
 const HistoryItem = ({ item }: Props) => {
+    const navigation = useNavigation<
+        BottomTabNavigationProp<AppNavigatorParamList, "History">
+    >();
+
+    const edit = (item: Jot) => {
+        navigation.navigate("Jot", { edit: item });
+    };
+
     return (
-        <View
+        <Pressable
+            onPress={() => edit(item)}
             style={{
                 borderRadius: 6,
                 marginHorizontal: 20,
@@ -36,7 +47,7 @@ const HistoryItem = ({ item }: Props) => {
             >
                 <Text style={{ color: textColor }}>{item.text}</Text>
             </View>
-        </View>
+        </Pressable>
     );
 };
 

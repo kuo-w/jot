@@ -1,4 +1,4 @@
-import { navActiveTintColor, navBgColor, textColor } from "colors";
+import { navActiveTintColor, textColor } from "colors";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Topic } from "types";
@@ -9,7 +9,7 @@ type Props = {
     onLongPress: (topic: string) => void;
 };
 
-const TopicItem = ({ data, onPress, onLongPress }: Props) => {
+const TopicListItem = ({ data, onPress, onLongPress }: Props) => {
     return (
         <View style={{ margin: 10 }}>
             <Pressable
@@ -47,4 +47,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TopicItem;
+export default TopicListItem;

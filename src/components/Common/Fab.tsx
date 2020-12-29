@@ -8,6 +8,7 @@ import {
     textTertiaryColor,
 } from "colors";
 import { IconName } from "types";
+import Fade from "./Fade";
 
 type FabPositionStyle = {
     primary: ViewStyle;
@@ -36,6 +37,7 @@ const styling: FabPositionStyle = {
 type Props = {
     icon: IconName;
     onPress: () => void;
+    visible: boolean;
     position?: keyof FabPositionStyle;
 };
 
@@ -61,22 +63,28 @@ const Icon = (name: IconName, position: keyof FabPositionStyle) => {
     }
 };
 
-const Fab = ({ onPress, icon, position = "primary" }: Props) => {
+const Fab = ({ onPress, icon, position = "primary", visible }: Props) => {
     return (
-        <TouchableOpacity
-            onPress={onPress}
+        <Fade
             style={{
                 ...styling[position],
-                borderWidth: 1,
-                borderColor: "rgba(0,0,0,0.2)",
                 alignItems: "center",
                 justifyContent: "center",
                 position: "absolute",
                 zIndex: 2,
             }}
+            visible={visible}
         >
-            {Icon(icon, position)}
-        </TouchableOpacity>
+            <TouchableOpacity
+                onPress={onPress}
+                style={{
+                    borderWidth: 1,
+                    borderColor: "rgba(0,0,0,0.2)",
+                }}
+            >
+                {Icon(icon, position)}
+            </TouchableOpacity>
+        </Fade>
     );
 };
 

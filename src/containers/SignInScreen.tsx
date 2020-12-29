@@ -5,7 +5,7 @@ import { Login } from "store/authSlice";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { AppNavigatorParamList } from "types";
 import AuthOptionButton from "@components/Auth/AuthOptionButton";
-import { textSecondaryColor } from "colors";
+import { appBgColor, textSecondaryColor } from "colors";
 
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "SignIn">;
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "black",
+        backgroundColor: appBgColor,
     },
 });
 export default SignInScreen;

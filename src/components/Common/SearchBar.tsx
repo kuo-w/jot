@@ -21,7 +21,7 @@ const SearchBar = forwardRef<TextInput, Props>(({ textChangeHandler }, ref) => {
             <AntDesign
                 name="search1"
                 size={20}
-                style={{ backgroundColor: "black" }}
+                style={{ backgroundColor: appBgColor }}
                 color={navActiveTintColor}
             />
             <TextInput

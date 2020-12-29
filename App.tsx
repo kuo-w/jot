@@ -27,6 +27,10 @@ dayjs.extend(relativeTime);
 LogBox.ignoreLogs(["Setting a timer"]);
 LogBox.ignoreLogs(["Remote debugger"]);
 
+if (!__DEV__) {
+    console.log = () => {};
+}
+
 if (firebase.apps.length === 0) {
     firebase.initializeApp(FIREBASE_CONFIG);
     firebaseApi.initializeRefs();

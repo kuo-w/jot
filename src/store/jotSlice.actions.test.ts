@@ -7,9 +7,10 @@ import { AppDispatch, RootState } from ".";
 import appInitialState, {
     PartialRootState,
 } from "./__mocks__/storeInitialState";
-import { getall } from "./jotSlice";
-import { JotGetAll } from "types";
+import { getall, renameTopic } from "./jotSlice";
 import dayjs from "dayjs";
+import { njot } from "@api/__mocks__/mockData";
+import { Jot } from "types";
 import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 
 const middlewares = [thunk];
@@ -25,11 +26,6 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-let getAllResult: JotGetAll = {
-    items: [],
-    remoteFetch: false,
-};
-
 describe("getall", () => {
     const assertDidRemoteFetch = async (
         expectedDidRemoteFetch: boolean,
@@ -37,7 +33,11 @@ describe("getall", () => {
         storageApiRemoteFetchTime?: Date
     ) => {
         const store = mockStore(appInitialState(state));
-        mocked(mockedJotApi.getall).mockResolvedValue(getAllResult);
+        mocked(mockedJotApi.getall).mockResolvedValue({
+            items: [],
+            remoteFetch: false,
+        });
+
         if (storageApiRemoteFetchTime) {
             mocked(mockedStorageApi.get).mockResolvedValue(
                 storageApiRemoteFetchTime.toJSON()
@@ -96,5 +96,34 @@ describe("getall", () => {
                     .toJSON(),
             },
         });
+    });
+});
+
+describe("renametopic", () => {
+    const initTestState = (items: Jot[]) => {
+        const store = mockStore(
+            appInitialState({
+                jots: {
+                    jots: items,
+                },
+            })
+        );
+        return store;
+    };
+
+    const initItems = (...topicsItems: [string[]]) =>
+        topicsItems.map((ti) => njot({ topics: ti }));
+
+    test("does rename", async () => {
+        const items = initItems(["1"]);
+        const expected = [{ ...items[0], topics: ["2"] }];
+
+        const store = initTestState(items);
+        mocked(mockedJotApi.renameTopic).mockResolvedValue(expected);
+        const result = await store.dispatch(
+            renameTopic({ oldTopic: "1", newTopic: "2" })
+        );
+
+        expect(result.payload).toEqual(expected);
     });
 });

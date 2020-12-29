@@ -2,7 +2,6 @@ import React, { ReactElement, useEffect } from "react";
 
 import JotScreen from "@containers/JotScreen";
 import HistoryScreen from "@containers/HistoryScreen";
-import SettingsScreen from "@containers/SettingsScreen";
 import Tab from "@containers/AppBottomTabNavigator";
 import { checkUserAuth } from "@store/authSlice";
 import { getall } from "@store/jotSlice";

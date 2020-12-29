@@ -11,6 +11,7 @@ import { CompositeNavigationProp, RouteProp } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
+import HistoryTopBar from "@components/History/HistoryTopBar";
 
 type NavigationProp = CompositeNavigationProp<
     BottomTabNavigationProp<AppNavigatorParamList, "History">,
@@ -58,34 +59,15 @@ const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
 
     return (
         <View style={{ backgroundColor: appBgColor, flex: 1 }}>
-            <View style={styles.topBar}>
-                <View>
-                    {jots.length > 0 && (
-                        <Text style={styles.count}>
-                            {`${filtered.length} / ${jots.length}`}
-                        </Text>
-                    )}
-                </View>
-                {!!route?.params?.topic && !ignoreFilter && (
-                    <View style={styles.filterContainer}>
-                        <Text style={styles.topic}>{route.params.topic}</Text>
-                        <MaterialCommunityIcons.Button
-                            onPress={() => setIgnoreFilter(true)}
-                            name="filter-remove"
-                            size={22}
-                            color={navActiveTintColor}
-                            style={styles.filterButton}
-                        ></MaterialCommunityIcons.Button>
-                    </View>
-                )}
-                <Ionicons.Button
-                    style={{ backgroundColor: appBgColor }}
-                    name="md-cog"
-                    size={22}
-                    color={navActiveTintColor}
-                    onPress={() => navigation.navigate("Settings")}
-                />
-            </View>
+            <HistoryTopBar
+                showCount={jots.length > 0}
+                showResetFilter={!!route?.params?.topic && !ignoreFilter}
+                filteredItemsCount={filtered.length}
+                allItemsCount={jots.length}
+                filteredTopic={route?.params?.topic}
+                onResetFilter={() => setIgnoreFilter(true)}
+                onClickSettings={() => navigation.navigate("Settings")}
+            ></HistoryTopBar>
             {jots.length > 0 ? (
                 <>
                     <HistoryList items={filtered}></HistoryList>
@@ -96,31 +78,5 @@ const HistoryScreen = ({ route, navigation }: Props): ReactElement => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    topBar: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    filterContainer: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        paddingHorizontal: 10,
-        alignItems: "center",
-    },
-    filterButton: {
-        backgroundColor: appBgColor,
-    },
-    topic: {
-        color: navActiveTintColor,
-        fontSize: 18,
-    },
-    count: {
-        color: navActiveTintColor,
-        fontSize: 16,
-        paddingLeft: 36,
-    },
-});
 
 export default HistoryScreen;

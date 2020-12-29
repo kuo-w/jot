@@ -6,6 +6,7 @@ import storageApi, { StorageKey } from "@api/storageApi";
 import dayjs from "dayjs";
 import { MIN_WAIT_TIME_REMOTE_FETCH_MINS } from "../../config";
 import { categorizeTopics } from "./topicSlice";
+import thunk from "redux-thunk";
 
 export type JotsState = {
     jots: Jot[];
@@ -15,19 +16,40 @@ export type JotsState = {
 };
 
 // Updates new item to local storage and cloud storage if possible.
-export const save = createAsyncThunk(
-    "jots/save",
-    async ({ text, topics }: { text: string; topics: string[] }, thunkApi) => {
-        try {
-            const result = await jotApi.save(text, topics);
-            thunkApi.dispatch(categorizeTopics(result));
-            return result;
-        } catch (error) {
-            console.error(error);
-            return thunkApi.rejectWithValue("Error saving entry.");
-        }
+export const save = createAsyncThunk<
+    Jot[],
+    { guid?: string; text: string; topics: string[] },
+    {
+        state: RootState;
+        rejectValue: string;
+        dispatch: AppDispatch;
     }
-);
+>("jots/save", async ({ text, topics, guid }, thunkApi) => {
+    try {
+        let result: Jot[] = [];
+        if (guid) {
+            const itemToUpdate = thunkApi
+                .getState()
+                .jots.jots.find((j) => j.guid == guid);
+
+            if (itemToUpdate == undefined)
+                return thunkApi.rejectWithValue("Editing non-existent item");
+
+            result = await jotApi.edit(itemToUpdate, { text, topics });
+            console.log("UPDATE RESULT");
+            console.log(topics);
+            console.log(result);
+        } else {
+            result = await jotApi.save(text, topics);
+        }
+
+        thunkApi.dispatch(categorizeTopics(result));
+        return result;
+    } catch (error) {
+        console.error(error);
+        return thunkApi.rejectWithValue("Error saving entry.");
+    }
+});
 
 // Called on successful sync or to reset fetch time so fetch not blocked by wait period.
 export const setRemoteFetchTime = createAction<string | undefined>(
@@ -89,6 +111,7 @@ export const getall = createAsyncThunk<
             (await storageApi.get<string>(StorageKey.REMOTEFETCHTIME));
 
         if (lastFetchTime) {
+            // For when app initializes
             thunkApi.dispatch(setRemoteFetchTime(lastFetchTime));
         }
 
@@ -96,6 +119,7 @@ export const getall = createAsyncThunk<
             MIN_WAIT_TIME_REMOTE_FETCH_MINS,
             "minute"
         );
+
         const remoteGetWaitPeriodElapsed =
             lastFetchTime == undefined ||
             dayjs(lastFetchTime).diff(minWaitTime, "minute") < 0;

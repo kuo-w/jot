@@ -3,7 +3,7 @@ import { Jot } from "types";
 
 import jotApi from "./jotApi";
 import storageApi from "./storageApi";
-import { jot1, jot2, jot3 } from "./__mocks__/mockData";
+import { jot1, jot2, jot3, njot } from "./__mocks__/mockData";
 
 import mockRemoteApi, { mockedSet } from "./__mocks__/remoteApi";
 
@@ -108,5 +108,57 @@ describe("set", () => {
         await jotApi.save("sometext");
         expect(mockedStorageApi.mock.calls).toHaveLength(1);
         expect(mockedSet.mock.calls).toHaveLength(1);
+    });
+});
+
+describe("rename topic", () => {
+    test("renames one item", async () => {
+        const item = njot({ topics: ["1", "2"] });
+        const items = [item];
+        const expected = [{ ...item, topics: ["3", "2"] }];
+
+        const result = await jotApi.renameTopic(items, "1", "3");
+
+        expect(result).toEqual(expected);
+    });
+
+    test("affects only items with old value", async () => {
+        const item1 = njot({ topics: ["1"] });
+        const item2 = njot({ topics: ["1"] });
+        const item3 = njot({ topics: ["4"] });
+        const items = [item1, item2, item3];
+        const expected = [
+            { ...item1, topics: ["1"] },
+            { ...item2, topics: ["1"] },
+            { ...item3, topics: ["5"] },
+        ];
+
+        let result = await jotApi.renameTopic(items, "4", "5");
+
+        expect(result).toEqual(expected);
+    });
+
+    test("changes only items with old value", async () => {
+        const item1 = njot({ topics: ["1"] });
+        const items = [item1];
+        const expected = [{ ...item1, topics: ["1"] }];
+
+        let result = await jotApi.renameTopic(items, "0", "0");
+
+        expect(result).toEqual(expected);
+    });
+
+    test("removes duplicates", async () => {
+        const item1 = njot({ topics: ["1"] });
+        const item2 = njot({ topics: ["1", "3"] });
+        const items = [item1, item2];
+        const expected = [
+            { ...item1, topics: ["3"] },
+            { ...item2, topics: ["3"] },
+        ];
+
+        let result = await jotApi.renameTopic(items, "1", "3");
+
+        expect(result).toEqual(expected);
     });
 });

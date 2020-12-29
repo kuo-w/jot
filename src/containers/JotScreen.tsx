@@ -9,23 +9,38 @@ import KeyboardAvoidingTextInput from "@components/Common/KeyboardAvoidingTextIn
 import TopicInput from "@components/Topics/TopicInput";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { AppNavigatorParamList } from "types";
+import useKeyboard from "hooks/useKeyboard";
+import { RouteProp } from "@react-navigation/native";
 
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "Jot">;
+type ScreenRouteProp = RouteProp<AppNavigatorParamList, "Jot">;
 
 type Props = {
     navigation: NavigationProp;
+    route: ScreenRouteProp;
 };
 
-const JotScreen = ({ navigation }: Props) => {
+const JotScreen = ({ route, navigation }: Props) => {
     const dispatch = useDispatch();
     const [inputText, setInputText] = useState(""); // Body text.
-    const [showTopicInput, setShowTopicInput] = useState(false); // Shows topic input overlay when true, hides overlay otherwise.
     const [topics, setTopics] = useState<string[]>([]); // Additional data for jot.
-    const [inputTopicText, setInputTopicText] = useState(""); // Text state of topic input component.
+    const [showTopicInput, setShowTopicInput] = useState(false); // Shows topic input overlay when true, hides overlay otherwise.
+    const [topicInputText, setTopicInputText] = useState(""); // Text state of topic input component.
+    const keyboardVisible = useKeyboard();
+
+    useEffect(() => {
+        if (route?.params?.edit == undefined) return;
+
+        setInputText(route?.params?.edit?.text);
+        setTopics(route?.params?.edit?.topics ?? []);
+    }, [route]);
 
     // Clear topic state on blur.
     useEffect(() => {
         const blurListener = navigation.addListener("blur", () => {
+            navigation.setParams({ edit: undefined });
+            setInputText("");
+            setTopicInputText("");
             setShowTopicInput(false);
             setTopics([]);
         });
@@ -45,33 +60,30 @@ const JotScreen = ({ navigation }: Props) => {
         console.log(`WITH TOPICS::${topics.join(",")}`);
         dispatch(
             jotActions.save({
+                guid: route?.params?.edit?.guid,
                 text: inputText,
                 topics:
-                    inputTopicText == ""
+                    topicInputText == ""
                         ? topics
-                        : [...topics, inputTopicText.toLowerCase()],
+                        : [...topics, topicInputText.toLowerCase()],
             })
         );
         setInputText("");
     };
 
-    // Show input overlay if hidden, otherwise hide.
-    const toggleTopicInput = () => {
-        if (!showTopicInput) {
-            // openingTopicInput
-            setTopics([]);
-        }
-
-        setShowTopicInput(!showTopicInput);
-    };
-
     // Handle callback from topic input component.
-    const onTopicSubmit = (topic: string) => {
-        if (topic == "") {
+    const onTopicSubmit = () => {
+        if (topicInputText == "") {
             return;
         }
 
-        setTopics([...topics, topic.toLowerCase()]);
+        setTopics([...topics, topicInputText.toLowerCase()]);
+        setTopicInputText("");
+    };
+
+    // Remove topic from component state
+    const removeTopic = (topic: string) => {
+        setTopics(topics.filter((t) => t != topic));
     };
 
     return (
@@ -81,14 +93,18 @@ const JotScreen = ({ navigation }: Props) => {
                 backgroundColor: appBgColor,
             }}
         >
-            {!showTopicInput && (
-                <Fab
-                    onPress={() => toggleTopicInput()}
-                    icon="hash"
-                    position="secondary"
-                ></Fab>
-            )}
             <Fab
+                visible={
+                    showTopicInput || (!showTopicInput && !keyboardVisible)
+                }
+                onPress={() => setShowTopicInput(!showTopicInput)}
+                icon="hash"
+                position="secondary"
+            ></Fab>
+            <Fab
+                visible={
+                    (!showTopicInput && !keyboardVisible) || showTopicInput
+                }
                 onPress={() => {
                     Keyboard.dismiss();
                     submitJot();
@@ -98,9 +114,12 @@ const JotScreen = ({ navigation }: Props) => {
             {showTopicInput && (
                 <TopicInput
                     multi
+                    value={topicInputText}
                     onKeyboardHide={() => setShowTopicInput(false)}
                     onSubmit={onTopicSubmit}
-                    onTextChange={setInputTopicText}
+                    onTextChange={setTopicInputText}
+                    onItemPress={removeTopic}
+                    topics={topics}
                 ></TopicInput>
             )}
             <KeyboardAvoidingTextInput

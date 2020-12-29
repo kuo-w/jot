@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { FlatList } from "react-native";
 import { Topic } from "types";
-import TopicItem from "./Topic";
+import TopicListItem from "./Topic";
 import TopicDivider from "./TopicDivider";
 
 type Props = {
@@ -18,11 +18,11 @@ const TopicList = ({ data, onPress, onLongPress }: Props) => {
             data={[...data].sort((d) => d.count)}
             renderItem={({ item, index }: { item: Topic; index: number }) => (
                 <>
-                    <TopicItem
+                    <TopicListItem
                         data={item}
                         onPress={onPress}
                         onLongPress={onLongPress}
-                    ></TopicItem>
+                    ></TopicListItem>
                     {index != data.length - 1 && <TopicDivider></TopicDivider>}
                 </>
             )}

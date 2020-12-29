@@ -21,11 +21,12 @@ type Props = {
 const TopicsScreen = ({ navigation }: Props) => {
     const dispatch = useDispatch();
     const { topics } = useSelector(selectTopics);
-    const fuzzySearch = useFuzzySearch(topics, "name", "name");
     const [showInput, setShowInput] = useState(false);
     const [topicEdit, setTopicEdit] = useState("");
-    const searchBarTextInput = useRef<TextInput>(null);
     const [includeTopics, setIncludeTopics] = useState<string[] | null>(null);
+    const [topicInputText, setTopicInputText] = useState("");
+    const fuzzySearch = useFuzzySearch(topics, "name", "name");
+    const searchBarTextInput = useRef<TextInput>(null);
 
     useEffect(() => {
         const blurListener = navigation.addListener("blur", () => {
@@ -42,15 +43,16 @@ const TopicsScreen = ({ navigation }: Props) => {
     };
 
     const editTopic = (topic: string) => {
+        setTopicInputText(topic);
         setTopicEdit(topic);
         setShowInput(true);
     };
 
-    const topicInputSubmit = (newTopic: string) => {
+    const topicInputSubmit = () => {
         dispatch(
             renameTopic({
                 oldTopic: topicEdit,
-                newTopic,
+                newTopic: topicInputText,
             })
         );
         setShowInput(false);
@@ -74,31 +76,33 @@ const TopicsScreen = ({ navigation }: Props) => {
         return topics.filter((t) => includeTopics?.includes(t.name));
     };
 
-    return topics.length > 0 ? (
+    if (topics.length == 0) return <TopicEmpty></TopicEmpty>;
+
+    return (
         <>
-            {showInput && (
+            {showInput ? (
                 <TopicInput
-                    initialValue={topicEdit}
+                    value={topicInputText}
+                    onTextChange={setTopicInputText}
                     onKeyboardHide={() => setShowInput(false)}
                     onSubmit={topicInputSubmit}
                 ></TopicInput>
+            ) : (
+                <>
+                    <View style={{ paddingHorizontal: 10 }}>
+                        <TopSearchBar
+                            ref={searchBarTextInput}
+                            textChangeHandler={handleSearchText}
+                        ></TopSearchBar>
+                    </View>
+                    <TopicList
+                        data={_filtered(topics)}
+                        onPress={goHistory}
+                        onLongPress={editTopic}
+                    ></TopicList>
+                </>
             )}
-            <>
-                <View style={{ paddingHorizontal: 10 }}>
-                    <TopSearchBar
-                        ref={searchBarTextInput}
-                        textChangeHandler={handleSearchText}
-                    ></TopSearchBar>
-                </View>
-                <TopicList
-                    data={_filtered(topics)}
-                    onPress={goHistory}
-                    onLongPress={editTopic}
-                ></TopicList>
-            </>
         </>
-    ) : (
-        <TopicEmpty></TopicEmpty>
     );
 };
 

@@ -1,4 +1,6 @@
+import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
+import { Jot } from "types";
 
 export const jot1 = {
     guid: "123",
@@ -17,3 +19,18 @@ export const jot3 = {
     text: "test",
     createdAt: dayjs().subtract(1, "day").toJSON(),
 };
+
+export function njot({
+    text = "",
+    topics = [],
+}: {
+    text?: string;
+    topics?: string[];
+}): Jot {
+    return {
+        guid: uuidv4(),
+        text: text,
+        createdAt: Date.now().toString(),
+        topics: topics,
+    };
+}

@@ -30,6 +30,11 @@ export type Jot = {
     topics?: string[];
 };
 
+export type JotUpdateFields = {
+    text: string;
+    topics?: string[];
+};
+
 export type IconName = "checkmark" | "hash";
 
 export type JotGetAll = {
@@ -51,7 +56,7 @@ export type ThunkResult<ReturnType = void> = ThunkAction<
 >;
 
 export type AppNavigatorParamList = {
-    Jot: undefined;
+    Jot: { edit: Jot } | undefined;
     History: { topic: string } | undefined;
     SignIn: undefined;
     Topics: undefined;

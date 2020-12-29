@@ -30,6 +30,7 @@ const KeyboardAvoidingTextInput = ({ onChangeText, inputText }: Props) => {
                             color: textColor,
                             fontSize: 20,
                         }}
+                        autoCapitalize="none"
                         placeholderTextColor={textSecondaryColor}
                         placeholder={"Start here."}
                         onChangeText={(text) => onChangeText(text)}
