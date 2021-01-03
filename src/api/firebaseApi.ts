@@ -11,6 +11,16 @@ import {
     Tracker,
 } from "types";
 
+/**
+ * Firebase API
+ *
+ * Intended usage:
+ * Should only be used when there's internet and a user logged in.
+ * Use tracker document to diff local data and remote data.
+ * Saved documents should have doc ID set to locally generated GUID.
+ *
+ */
+
 const jotConverter = {
     toFirestore(jot: Jot): firebase.firestore.DocumentData {
         return {
