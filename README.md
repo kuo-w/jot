@@ -6,8 +6,9 @@ Data can be kept offline or synced to cloud where it's stored in NoSQL database 
 
 Only authenticating Google users and guests for current use case.
 
-## Built With
+### Built With
 
+- React Native
 - TypeScript
 - Redux + Redux Toolkit
 - React Navigation
@@ -25,7 +26,7 @@ Copy the files without the `.default` or `.example` and fill in the details.
 ### Development
 
 - `npm install`
-- `npm start`
+- `npm run start`
 - open app using Expo options in phone or emulator
 
 ## Tests
