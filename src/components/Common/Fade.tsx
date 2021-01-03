@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useRef } from "react";
+import React, { ReactElement, useEffect, useRef, useState } from "react";
 import { Animated, ViewStyle } from "react-native";
 
 type Props = {
@@ -9,29 +9,40 @@ type Props = {
 
 // Fades inner components in-and-out.
 const Fade = (props: Props) => {
-    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [fading, setFading] = useState(false);
+    const [_visible, _SetVisible] = useState(props.visible);
+    const fadeValue = new Animated.Value(props.visible ? 1 : 0);
+    const fadeAnim = useRef(fadeValue).current;
 
     const fadeIn = () => {
+        setFading(true);
         Animated.timing(fadeAnim, {
             toValue: 1,
             duration: 500,
             useNativeDriver: true,
-        }).start();
+        }).start(() => {
+            setFading(false);
+            _SetVisible(true);
+        });
     };
 
     const fadeOut = () => {
+        setFading(true);
         Animated.timing(fadeAnim, {
             toValue: 0,
             duration: 500,
             useNativeDriver: true,
-        }).start();
+        }).start(() => {
+            setFading(false);
+            _SetVisible(false);
+        });
     };
 
     useEffect(() => {
+        if (_visible == props.visible) return;
+
         if (props.visible) fadeIn();
         else fadeOut();
-
-        return () => fadeOut();
     }, [props.visible]);
 
     return (
@@ -41,7 +52,7 @@ const Fade = (props: Props) => {
                 opacity: fadeAnim, // Bind opacity to animated value
             }}
         >
-            {props.children}
+            {(fading || _visible) && props.children}
         </Animated.View>
     );
 };

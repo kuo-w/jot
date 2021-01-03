@@ -103,7 +103,7 @@ const JotScreen = ({ route, navigation }: Props) => {
             ></Fab>
             <Fab
                 visible={
-                    (!showTopicInput && !keyboardVisible) || showTopicInput
+                    showTopicInput || (!showTopicInput && !keyboardVisible)
                 }
                 onPress={() => {
                     Keyboard.dismiss();
