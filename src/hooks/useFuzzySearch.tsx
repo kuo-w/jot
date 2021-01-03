@@ -65,9 +65,6 @@ const useFuzzySearch = (items: object[], textPath: string, idPath: string) => {
     // Search dataset and return ids of objects with closest match.
     const search = (text: string): string[] | null => {
         const result = fuse?.search(text);
-        console.log("SEARCH RESULT");
-        console.log(result);
-
         if (!result) {
             return null;
         }

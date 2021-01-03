@@ -95,14 +95,10 @@ export const getall = createAsyncThunk<
 >("jots/getall", async (_, thunkApi) => {
     try {
         console.log("JOT THUNK::GET ALL");
-
         const state = thunkApi.getState();
 
         const canGetRemote =
             state.network.isInternetReachable && state.auth.signedIn;
-
-        console.log("JOT THUNK::FETCH REMOTE?");
-        console.log(canGetRemote);
 
         // Fetch data.
         const result = await jotApi.getAll(canGetRemote);
@@ -131,7 +127,6 @@ export const jotSlice = createSlice({
                 state.loading = true;
             })
             .addCase(getall.fulfilled, (state, { payload }) => {
-                console.log(`JOT REDUCER::GETALL`);
                 state.loading = false;
 
                 if (!payload) return;
@@ -148,8 +143,6 @@ export const jotSlice = createSlice({
                 state.loading = true;
             })
             .addCase(save.fulfilled, (state, { payload }) => {
-                console.log("JOT REDUCER::SET FULFILLED PAYLOAD");
-                console.log(payload.length);
                 state.jots = payload;
                 state.loading = false;
             })

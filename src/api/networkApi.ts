@@ -13,12 +13,7 @@ let _currentState: NetInfoState = {
 };
 
 export const addListener = (callback: (nstate: NetInfoState) => void): void => {
-    console.log("NETWORK API::ADDING LISTENER");
     _listeners.push(callback);
-
-    console.log("NETWORK API::CURRENT STATE ON ADD");
-    console.log(_currentState);
-
     callback(_currentState);
 };
 
@@ -29,11 +24,6 @@ export const getNetState = (): NetInfoState => {
 const _executeCallbacks: NetInfoChangeHandler = async (
     state: NetInfoState
 ): Promise<void> => {
-    console.log(
-        `NETWORK API::STATE CHANGE > INTERNET REACHABLE? ${state.isInternetReachable}`
-    );
-    console.log(`NETWORK API::LISTENERS# > ${_listeners.length}`);
-
     _currentState = state;
 
     await Promise.all(_listeners.map((callback) => callback(state)));

@@ -31,7 +31,6 @@ const SettingsScreen = ({ navigation }: Props): ReactElement => {
                     !signedIn
                         ? () => navigation.navigate("SignInOptions")
                         : () => {
-                              console.log("SETTINGSCREEN::LOGOUT");
                               dispatch(logout());
                           }
                 }

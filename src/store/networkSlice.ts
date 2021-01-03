@@ -25,9 +25,6 @@ const networkSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(setNetState, (state, { payload }) => {
-            console.log("NETWORK REDUCER::NETSTATE CHANGE PAYLOAD");
-            console.log(payload);
-
             state.loading = false;
             state.isInternetReachable = <boolean>payload.isInternetReachable;
         });

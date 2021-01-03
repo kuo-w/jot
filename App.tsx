@@ -37,10 +37,7 @@ if (firebase.apps.length === 0) {
 }
 
 (() => {
-    console.log("APP NAV::ADDING DISPATCH ON NETWORK CHANGE LISTENER");
     networkApi.addListener((nstate) => {
-        console.info("APP::DISPATCHING NETWORK STATE CHANGE");
-        console.log(nstate);
         store.dispatch(setNetState(nstate));
     });
 })();

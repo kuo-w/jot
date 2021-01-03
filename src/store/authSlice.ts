@@ -61,7 +61,6 @@ export const Login = createAsyncThunk<
     console.log("AUTH THUNK::LOGIN SUCCESSFUL");
     thunkApi.dispatch(setRemoteFetchTime(undefined));
     authApi.actionOnAuth(() => {
-        console.log("AUTH API::IN CALLBACK");
         thunkApi.dispatch(setSignedIn());
         thunkApi.dispatch(getall());
         onSuccess();
@@ -122,7 +121,6 @@ export const authSlice = createSlice({
                 state.accessToken = undefined;
             })
             .addCase(setSignedIn, (state) => {
-                console.log("AUTH REDUCER::SETTING SIGNED IN TRUE");
                 state.signedIn = true;
             })
             .addCase(checkUserAuth.fulfilled, (state, { payload }) => {

@@ -13,7 +13,7 @@ const get = async <T>(key: StorageKey): Promise<T | undefined> => {
     try {
         json = await AsyncStorage.getItem(key);
     } catch (error) {
-        console.log(`AsyncStorage error:\nKey: ${key}\nError:${error}`);
+        console.error(`AsyncStorage error:\nKey: ${key}\nError:${error}`);
         throw new Error(error);
     }
     if (json == null) {

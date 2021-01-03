@@ -56,8 +56,6 @@ const initializeRefs = () => {
 const _uid = (): string | undefined => {
     try {
         const uid = firebase.auth().currentUser?.uid;
-        console.log(`Firebase UID - ${uid}`);
-
         return uid;
     } catch (error) {
         console.error(`Error getting user UID: ${error}`);
@@ -104,8 +102,6 @@ const get = async (): Promise<Jot[] | undefined> => {
     if (!_uid() || !jotsRef) return;
 
     try {
-        console.log("FIREBASE API::GET JOTS");
-
         const snapshot = await jotsRef.where("userid", "==", _uid()).get();
         return snapshot.docs.map((doc: any) => doc.data());
     } catch (error) {
@@ -118,9 +114,6 @@ const set = async (jot: Jot): Promise<void> => {
     if (!_uid() || !jotsRef) return;
 
     try {
-        console.log("FIREBASE API::SET");
-        console.log(jot);
-
         await jotsRef.doc(jot.guid).set(jot);
     } catch (error) {
         console.error(`Firebase - write fail: ${error}`);

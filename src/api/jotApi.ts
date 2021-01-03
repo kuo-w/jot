@@ -47,25 +47,16 @@ const _getItemsOnlyLocal = (local: Jot[], remote: Jot[]): Jot[] => {
 const _syncWithConnected = async (
     shouldFetchRemote: boolean
 ): Promise<JotGetAll> => {
-    console.log(`JOT API::REMOTE API EXISTS? ${_remoteApi != null}`);
-
     if (!shouldFetchRemote || !_remoteApi) {
         const items = (await storage.get<Jot[]>(StorageKey.JOTS)) ?? [];
-        console.log("JOT API::LOCAL FETCH");
-        console.log(items);
         return {
             items: items,
             remoteFetch: false,
         };
     }
 
-    console.log("JOT API::REMOTEIDS CHECK");
-
     const tracker = await _remoteApi.getIds();
     const remoteIds = tracker.ids;
-
-    console.log("JOT API::REMOTEIDS");
-    console.log(remoteIds.length);
 
     let local = await storage.get<Jot[]>(StorageKey.JOTS);
     if (local == undefined) {
@@ -76,33 +67,21 @@ const _syncWithConnected = async (
         ...new Set([...local.map((l) => l.guid), ...remoteIds]),
     ].length;
     if (totalLength === local.length && totalLength == remoteIds.length) {
-        console.log("JOT API::RETURNING ONLY LOCAL");
         return { items: local, remoteFetch: false };
     }
 
     const remote = await _remoteApi.getAll();
-
-    console.log("JOT API::REMOTE RESULT");
-    console.log(remote?.length);
-    console.log("JOT API::LOCAL RESULT");
-    console.log(local.length);
-
     if (remote == undefined) {
         return { items: local, remoteFetch: false };
     }
 
     const combined = _getUniqueByGuid(remote.concat(local));
 
-    console.log("JOT API::COMBINED");
-    console.log(combined.length);
-
     const itemsToUpload = _getItemsOnlyLocal(local, remote);
 
     for (const j of itemsToUpload) {
         _remoteApi.set(j);
     }
-    console.log("JOT API::UPLOAD ITEMS");
-    console.log(itemsToUpload);
 
     _remoteApi.setIds(combined);
     await storage.write<Jot[]>(StorageKey.JOTS, combined);
@@ -166,9 +145,6 @@ const renameTopic = async (
         updated.push(temp);
         return temp;
     });
-
-    console.log("UPDATED JOT API");
-    console.log(result);
 
     const tasks = [storage.write<Jot[]>(StorageKey.JOTS, result)];
 
