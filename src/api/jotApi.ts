@@ -117,7 +117,7 @@ const _sort = (items: Jot[]) => {
     );
 };
 
-const getall = async (
+const getAll = async (
     shouldFetchRemote: ShouldFetchRemote
 ): Promise<JotGetAll> => {
     const result = await _syncWithConnected(shouldFetchRemote);
@@ -226,7 +226,7 @@ const itemsAreEqual = (a: Jot[], b: Jot[]) => {
 export default {
     save,
     edit,
-    getall,
+    getAll,
     initializeApi,
     itemsAreEqual,
     renameTopic,

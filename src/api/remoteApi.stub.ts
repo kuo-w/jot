@@ -9,7 +9,7 @@ const getAll = async () => {
     console.log("APP::REMOTEGET RETURN RESULT");
     if (data == null) {
         console.log("REMOTE API STUB::GETTING LOCAL DATA");
-        let result = await jotApi.getall(false);
+        let result = await jotApi.getAll(false);
         result.items = [...result.items, jot1, jot2];
         console.log("REMOTE API STUB::STUBBING WITH LOCAL DATA");
         console.log(result.items);
@@ -37,6 +37,10 @@ const api: RemoteApi = {
     set,
     setUser,
     update,
+    getIds: async () => ({
+        ids: ["notimplemented"],
+    }),
+    setIds: async (_items: Jot[]) => {},
 };
 
 export default api;

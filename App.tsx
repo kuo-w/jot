@@ -45,9 +45,10 @@ if (firebase.apps.length === 0) {
     });
 })();
 
-(async () => {
+(() => {
     console.info("APP::INITIALIZE JOTAPI");
     if (STUB_REMOTE_API) {
+        // Local debugging
         console.info("APP::STUBBING REMOTE API");
         setRemoteApi(remoteApiStub);
     } else {

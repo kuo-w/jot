@@ -28,13 +28,13 @@ describe("getall", () => {
         state: PartialRootState
     ) => {
         const store = mockStore(appInitialState(state));
-        mocked(mockedJotApi.getall).mockResolvedValue({
+        mocked(mockedJotApi.getAll).mockResolvedValue({
             items: [],
             remoteFetch: false,
         });
 
         await store.dispatch(getall());
-        expect(jotApi.getall).lastCalledWith(expectedDidRemoteFetch);
+        expect(jotApi.getAll).lastCalledWith(expectedDidRemoteFetch);
     };
 
     test("do remote fetch", async () => {

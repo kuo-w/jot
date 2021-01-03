@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-community/async-storage";
 export enum StorageKey {
     JOTS = "JOTS",
     TEST = "TEST",
-    REMOTEFETCHTIME = "REMOTEFETCHTIME",
 }
 
 const _deserialize = (jsonStr: string) => JSON.parse(jsonStr);
@@ -35,6 +34,11 @@ const clear = async (key: StorageKey): Promise<void> => {
     }
 };
 
+/**
+ * Returns stored array of type T with appended item
+ * @param key
+ * @param item
+ */
 const pushItem = async <T>(key: StorageKey, item: T): Promise<T[]> => {
     let items: T[] | undefined;
     try {
@@ -43,6 +47,7 @@ const pushItem = async <T>(key: StorageKey, item: T): Promise<T[]> => {
             items = [];
         }
 
+        items.push(item);
         await write<T[]>(key, <T[]>items);
 
         return <T[]>items;
@@ -53,8 +58,6 @@ const pushItem = async <T>(key: StorageKey, item: T): Promise<T[]> => {
 
 const write = async <T>(key: StorageKey, item: T): Promise<void> => {
     try {
-        console.log(`STORAGE API::WRITE ITEM ON KEY ${key}`);
-
         await AsyncStorage.setItem(key, JSON.stringify(item));
     } catch (error) {
         console.error(`Failed to write: \nError: ${error}\nItem:${item}`);

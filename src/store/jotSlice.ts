@@ -3,14 +3,12 @@ import jotApi from "api/jotApi";
 import { AppDispatch, RootState } from "@store/index";
 import { Jot, JotGetAll } from "types";
 import storageApi, { StorageKey } from "@api/storageApi";
-import dayjs from "dayjs";
 import { categorizeTopics } from "./topicSlice";
 
 export type JotsState = {
     jots: Jot[];
     loading: boolean;
     error: string | undefined;
-    remoteFetchTime: string | undefined;
 };
 
 // Updates new item to local storage and cloud storage if possible.
@@ -26,6 +24,7 @@ export const save = createAsyncThunk<
     try {
         let result: Jot[] = [];
         if (guid) {
+            // Edit
             const itemToUpdate = thunkApi
                 .getState()
                 .jots.jots.find((j) => j.guid == guid);
@@ -34,9 +33,6 @@ export const save = createAsyncThunk<
                 return thunkApi.rejectWithValue("Editing non-existent item");
 
             result = await jotApi.edit(itemToUpdate, { text, topics });
-            console.log("UPDATE RESULT");
-            console.log(topics);
-            console.log(result);
         } else {
             result = await jotApi.save(text, topics);
         }
@@ -84,7 +80,6 @@ export const clearLocally = createAsyncThunk<
 >("jots/clearLocally", async (_, { dispatch }) => {
     console.log("JOT THUNK::CLEARING LOCAL DATA");
     await storageApi.clear(StorageKey.JOTS);
-    await storageApi.clear(StorageKey.REMOTEFETCHTIME);
     dispatch(categorizeTopics([]));
 });
 
@@ -103,22 +98,14 @@ export const getall = createAsyncThunk<
 
         const state = thunkApi.getState();
 
-        const shouldGetRemote =
+        const canGetRemote =
             state.network.isInternetReachable && state.auth.signedIn;
 
         console.log("JOT THUNK::FETCH REMOTE?");
-        console.log(shouldGetRemote);
+        console.log(canGetRemote);
 
         // Fetch data.
-        const result = await jotApi.getall(shouldGetRemote);
-
-        // Pass data around.
-        if (result.remoteFetch) {
-            storageApi.write<string>(
-                StorageKey.REMOTEFETCHTIME,
-                new Date().toJSON()
-            );
-        }
+        const result = await jotApi.getAll(canGetRemote);
 
         thunkApi.dispatch(categorizeTopics(result.items));
         return result;
@@ -132,7 +119,6 @@ export const jotsInitialState: JotsState = {
     jots: [],
     loading: false,
     error: undefined,
-    remoteFetchTime: undefined,
 };
 
 export const jotSlice = createSlice({
@@ -148,18 +134,11 @@ export const jotSlice = createSlice({
                 console.log(`JOT REDUCER::GETALL`);
                 state.loading = false;
 
-                if (!payload) {
-                    return;
-                }
+                if (!payload) return;
 
-                if (jotApi.itemsAreEqual(state.jots, payload.items)) {
-                    return;
-                }
+                if (jotApi.itemsAreEqual(state.jots, payload.items)) return;
 
                 state.jots = payload.items;
-                if (payload.remoteFetch) {
-                    state.remoteFetchTime = new Date().toJSON();
-                }
             })
             .addCase(getall.rejected, (state, { error }) => {
                 state.error = error.message;
@@ -170,7 +149,7 @@ export const jotSlice = createSlice({
             })
             .addCase(save.fulfilled, (state, { payload }) => {
                 console.log("JOT REDUCER::SET FULFILLED PAYLOAD");
-                console.log(payload);
+                console.log(payload.length);
                 state.jots = payload;
                 state.loading = false;
             })
@@ -178,22 +157,7 @@ export const jotSlice = createSlice({
                 state.error = error.message;
                 state.loading = false;
             })
-            .addCase(setRemoteFetchTime, (state, { payload }) => {
-                if (!payload) {
-                    return (state.remoteFetchTime = undefined);
-                }
-
-                if (
-                    state.remoteFetchTime &&
-                    dayjs(payload).diff(state.remoteFetchTime, "minute") == 0
-                ) {
-                    return;
-                }
-
-                state.remoteFetchTime = payload;
-            })
             .addCase(clearLocally.fulfilled, (state) => {
-                state.remoteFetchTime = undefined;
                 state.jots = [];
             })
             .addCase(renameTopic.fulfilled, (state, { payload }) => {

@@ -51,23 +51,22 @@ const JotScreen = ({ route, navigation }: Props) => {
     // Dispatch submit and clear data.
     const submitJot = () => {
         setShowTopicInput(false);
+        if (inputText == "") return;
 
-        if (inputText == "") {
-            return;
-        }
+        const action = {
+            guid: route?.params?.edit?.guid,
+            text: inputText,
+            topics:
+                topicInputText == ""
+                    ? topics
+                    : [...topics, topicInputText.toLowerCase()],
+        };
+        console.log(`JOT SCREEN::SUBMITTING`);
+        console.log(`INPUT TEXT: ${action.text}`);
+        console.log(`WITH TOPICS::${action.topics}`);
+        console.log(action);
 
-        console.log(`JOT SCREEN::SUBMITTING INPUT TEXT: ${inputText}`);
-        console.log(`WITH TOPICS::${topics.join(",")}`);
-        dispatch(
-            jotActions.save({
-                guid: route?.params?.edit?.guid,
-                text: inputText,
-                topics:
-                    topicInputText == ""
-                        ? topics
-                        : [...topics, topicInputText.toLowerCase()],
-            })
-        );
+        dispatch(jotActions.save(action));
         setInputText("");
     };
 

@@ -32,7 +32,7 @@ describe("getting all", () => {
     ) => {
         mockApiGetReturns(local, remote);
 
-        const result = await jotApi.getall(true);
+        const result = await jotApi.getAll(true);
         expect(result).toEqual({
             items: expected,
             remoteFetch: expectedRemoteSuccess,
@@ -104,7 +104,7 @@ describe("getting unsynced", () => {
         mocked(storageApi.get).mockResolvedValue([jot1]);
         jotApi.initializeApi(mockRemoteApi([], ["777"]));
 
-        const result = await jotApi.getall(true);
+        const result = await jotApi.getAll(true);
         expect(result).toEqual({
             items: [jot1],
             remoteFetch: true,
