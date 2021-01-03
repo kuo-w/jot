@@ -1,6 +1,5 @@
 import React from "react";
 import {
-    Keyboard,
     KeyboardAvoidingView,
     TextInput,
     TouchableWithoutFeedback,
@@ -11,9 +10,14 @@ import { textColor, textSecondaryColor } from "colors";
 type Props = {
     onChangeText: (input: string) => void;
     inputText: string;
+    onFocus?: () => void;
 };
 
-const KeyboardAvoidingTextInput = ({ onChangeText, inputText }: Props) => {
+const KeyboardAvoidingTextInput = ({
+    onChangeText,
+    inputText,
+    onFocus,
+}: Props) => {
     return (
         <KeyboardAvoidingView
             style={{
@@ -22,7 +26,7 @@ const KeyboardAvoidingTextInput = ({ onChangeText, inputText }: Props) => {
                 paddingTop: 20,
             }}
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback>
                 <View style={{ flex: 1 }}>
                     <TextInput
                         style={{
@@ -30,6 +34,7 @@ const KeyboardAvoidingTextInput = ({ onChangeText, inputText }: Props) => {
                             color: textColor,
                             fontSize: 20,
                         }}
+                        onFocus={() => onFocus && onFocus()}
                         autoCapitalize="none"
                         placeholderTextColor={textSecondaryColor}
                         placeholder={"Start here."}

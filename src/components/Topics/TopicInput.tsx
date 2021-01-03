@@ -26,15 +26,10 @@ const TopicInput = ({
 }: Props) => {
     // Hide topic input on keyboard hide.
     useEffect(() => {
-        Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
+        Keyboard.addListener("keyboardDidHide", onKeyboardHide);
 
-        return () =>
-            Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
+        return () => Keyboard.removeListener("keyboardDidHide", onKeyboardHide);
     }, []);
-
-    const _keyboardDidHide = () => {
-        onKeyboardHide();
-    };
 
     const submit = () => {
         onSubmit();

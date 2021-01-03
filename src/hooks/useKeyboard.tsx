@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Keyboard } from "react-native";
 
-const useKeyboard = () => {
+type Props = {
+    onHide?: () => void;
+};
+
+const useKeyboard = (props?: Props) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -21,6 +25,7 @@ const useKeyboard = () => {
 
     const _keyboardDidHide = () => {
         setVisible(false);
+        if (props?.onHide) props.onHide();
     };
 
     return visible;

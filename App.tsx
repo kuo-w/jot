@@ -1,6 +1,6 @@
 import "react-native-get-random-values";
 import React from "react";
-import { LogBox, StatusBar } from "react-native";
+import { LogBox, StatusBar, View } from "react-native";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { Provider } from "react-redux";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -72,11 +72,7 @@ const AppContainer = () => {
         <Provider store={store}>
             <NavigationContainer theme={AppTheme}>
                 <StatusBar hidden={true} />
-                <Stack.Navigator
-                    screenOptions={{
-                        headerShown: false,
-                    }}
-                >
+                <Stack.Navigator headerMode="none">
                     <Stack.Screen name="App" component={AppNavigator} />
                     <Stack.Screen
                         name="SignInOptions"

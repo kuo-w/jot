@@ -26,7 +26,12 @@ const JotScreen = ({ route, navigation }: Props) => {
     const [topics, setTopics] = useState<string[]>([]); // Additional data for jot.
     const [showTopicInput, setShowTopicInput] = useState(false); // Shows topic input overlay when true, hides overlay otherwise.
     const [topicInputText, setTopicInputText] = useState(""); // Text state of topic input component.
-    const keyboardVisible = useKeyboard();
+    const [focus, setFocus] = useState<"entry" | "topic" | "none">("none");
+    const keyboardVisible = useKeyboard({
+        onHide: () => {
+            setFocus("none");
+        },
+    });
 
     useEffect(() => {
         if (route?.params?.edit == undefined) return;
@@ -35,14 +40,18 @@ const JotScreen = ({ route, navigation }: Props) => {
         setTopics(route?.params?.edit?.topics ?? []);
     }, [route]);
 
+    const _resetState = () => {
+        navigation.setParams({ edit: undefined });
+        setInputText("");
+        setTopicInputText("");
+        setShowTopicInput(false);
+        setTopics([]);
+    };
+
     // Clear topic state on blur.
     useEffect(() => {
         const blurListener = navigation.addListener("blur", () => {
-            navigation.setParams({ edit: undefined });
-            setInputText("");
-            setTopicInputText("");
-            setShowTopicInput(false);
-            setTopics([]);
+            _resetState();
         });
 
         return blurListener;
@@ -67,14 +76,12 @@ const JotScreen = ({ route, navigation }: Props) => {
         console.log(action);
 
         dispatch(jotActions.save(action));
-        setInputText("");
+        _resetState();
     };
 
     // Handle callback from topic input component.
     const onTopicSubmit = () => {
-        if (topicInputText == "") {
-            return;
-        }
+        if (topicInputText == "") return;
 
         setTopics([...topics, topicInputText.toLowerCase()]);
         setTopicInputText("");
@@ -93,17 +100,13 @@ const JotScreen = ({ route, navigation }: Props) => {
             }}
         >
             <Fab
-                visible={
-                    showTopicInput || (!showTopicInput && !keyboardVisible)
-                }
+                visible={focus != "entry"}
                 onPress={() => setShowTopicInput(!showTopicInput)}
                 icon="hash"
                 position="secondary"
             ></Fab>
             <Fab
-                visible={
-                    showTopicInput || (!showTopicInput && !keyboardVisible)
-                }
+                visible={focus != "entry"}
                 onPress={() => {
                     Keyboard.dismiss();
                     submitJot();
@@ -114,7 +117,6 @@ const JotScreen = ({ route, navigation }: Props) => {
                 <TopicInput
                     multi
                     value={topicInputText}
-                    onKeyboardHide={() => setShowTopicInput(false)}
                     onSubmit={onTopicSubmit}
                     onTextChange={setTopicInputText}
                     onItemPress={removeTopic}
@@ -124,6 +126,7 @@ const JotScreen = ({ route, navigation }: Props) => {
             <KeyboardAvoidingTextInput
                 inputText={inputText}
                 onChangeText={setInputText}
+                onFocus={() => setFocus("entry")}
             ></KeyboardAvoidingTextInput>
         </View>
     );
