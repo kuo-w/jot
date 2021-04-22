@@ -1,15 +1,13 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { View, Keyboard } from "react-native";
+import { View, Button } from "react-native";
 import { appBgColor } from "colors";
 
 import * as jotActions from "@store/jotSlice";
-import Fab from "@components/Common/Fab";
 import KeyboardAvoidingTextInput from "@components/Common/KeyboardAvoidingTextInput";
 import TopicInput from "@components/Topics/TopicInput";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { AppNavigatorParamList } from "types";
-import useKeyboard from "hooks/useKeyboard";
 import { RouteProp } from "@react-navigation/native";
 
 type NavigationProp = BottomTabNavigationProp<AppNavigatorParamList, "Jot">;
@@ -20,18 +18,14 @@ type Props = {
     route: ScreenRouteProp;
 };
 
+type EntryMode = "entry" | "topic";
+
 const JotScreen = ({ route, navigation }: Props) => {
     const dispatch = useDispatch();
     const [inputText, setInputText] = useState(""); // Body text.
     const [topics, setTopics] = useState<string[]>([]); // Additional data for jot.
-    const [showTopicInput, setShowTopicInput] = useState(false); // Shows topic input overlay when true, hides overlay otherwise.
+    const [entryMode, setEntryMode] = useState<EntryMode>("entry"); // Shows topic input overlay when true, hides overlay otherwise.
     const [topicInputText, setTopicInputText] = useState(""); // Text state of topic input component.
-    const [focus, setFocus] = useState<"entry" | "topic" | "none">("none");
-    const keyboardVisible = useKeyboard({
-        onHide: () => {
-            setFocus("none");
-        },
-    });
 
     useEffect(() => {
         if (route?.params?.edit == undefined) return;
@@ -43,8 +37,7 @@ const JotScreen = ({ route, navigation }: Props) => {
     const _resetState = () => {
         navigation.setParams({ edit: undefined });
         setInputText("");
-        setTopicInputText("");
-        setShowTopicInput(false);
+        setEntryMode("entry");
         setTopics([]);
     };
 
@@ -59,7 +52,7 @@ const JotScreen = ({ route, navigation }: Props) => {
 
     // Dispatch submit and clear data.
     const submitJot = () => {
-        setShowTopicInput(false);
+        setEntryMode("entry");
         if (inputText == "") return;
 
         const action = {
@@ -99,35 +92,40 @@ const JotScreen = ({ route, navigation }: Props) => {
                 backgroundColor: appBgColor,
             }}
         >
-            <Fab
-                visible={focus != "entry"}
-                onPress={() => setShowTopicInput(!showTopicInput)}
-                icon="hash"
-                position="secondary"
-            ></Fab>
-            <Fab
-                visible={focus != "entry"}
-                onPress={() => {
-                    Keyboard.dismiss();
-                    submitJot();
-                }}
-                icon="checkmark"
-            ></Fab>
-            {showTopicInput && (
-                <TopicInput
-                    multi
-                    value={topicInputText}
-                    onSubmit={onTopicSubmit}
-                    onTextChange={setTopicInputText}
-                    onItemPress={removeTopic}
-                    topics={topics}
-                ></TopicInput>
+            {entryMode == "entry" && (
+                <>
+                    <KeyboardAvoidingTextInput
+                        inputText={inputText}
+                        onChangeText={setInputText}
+                    ></KeyboardAvoidingTextInput>
+                    <View>
+                        <Button title="Save" onPress={() => submitJot()} />
+                        <Button
+                            title="Tags"
+                            onPress={() => setEntryMode("topic")}
+                        />
+                    </View>
+                </>
             )}
-            <KeyboardAvoidingTextInput
-                inputText={inputText}
-                onChangeText={setInputText}
-                onFocus={() => setFocus("entry")}
-            ></KeyboardAvoidingTextInput>
+            {entryMode == "topic" && (
+                <>
+                    <TopicInput
+                        multi
+                        value={topicInputText}
+                        onSubmit={onTopicSubmit}
+                        onTextChange={setTopicInputText}
+                        onItemPress={removeTopic}
+                        topics={topics}
+                    ></TopicInput>
+                    <View>
+                        <Button title="Save" onPress={() => submitJot()} />
+                        <Button
+                            title="Back"
+                            onPress={() => setEntryMode("entry")}
+                        />
+                    </View>
+                </>
+            )}
         </View>
     );
 };
