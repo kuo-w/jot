@@ -1,6 +1,6 @@
 import { appBgColor, textTertiaryColor } from "colors";
 import React, { useEffect } from "react";
-import { Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, View, Text, TextInput, StyleSheet } from "react-native";
 import TopicInputItem from "./TopicInputItem";
 
 type Props = {

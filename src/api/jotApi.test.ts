@@ -9,7 +9,7 @@ import mockRemoteApi, { mockedSet } from "./__mocks__/remoteApi";
 
 jest.mock("./firebaseApi");
 jest.mock("./storageApi");
-jest.mock("@react-native-community/async-storage");
+jest.mock('@react-native-async-storage/async-storage');
 
 afterEach(() => {
     jest.clearAllMocks();
