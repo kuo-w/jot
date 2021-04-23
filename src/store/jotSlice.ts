@@ -10,7 +10,7 @@ export type JotsState = {
     loading: boolean;
     error: string | undefined;
 };
-
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 // Updates new item to local storage and cloud storage if possible.
 export const save = createAsyncThunk<
     Jot[],

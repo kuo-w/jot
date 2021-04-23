@@ -1,6 +1,6 @@
 import { appBgColor, textTertiaryColor } from "colors";
 import React, { useEffect } from "react";
-import { Keyboard, View, Text, TextInput, StyleSheet } from "react-native";
+import { Keyboard, View, Text, TextInput, StyleSheet, StyleSheetProperties, StyleProp, ViewStyle } from "react-native";
 import TopicInputItem from "./TopicInputItem";
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
     value: string;
     onTextChange: (text: string) => void;
     onKeyboardHide?: () => void;
+	containerStyle?: ViewStyle,
 
     // To show multiple topic names.
     multi?: boolean;
@@ -22,6 +23,7 @@ const TopicInput = ({
     onTextChange = () => {},
     onKeyboardHide = () => {},
     onItemPress = () => {},
+	containerStyle = {},
     topics = [],
 }: Props) => {
     // Hide topic input on keyboard hide.
@@ -37,7 +39,7 @@ const TopicInput = ({
     };
 
     return (
-        <View style={styles.container}>
+        <View style={{...styles.container, ...containerStyle}}>
             {multi && (
                 <View style={styles.items}>
                     {topics.map((t) => (
@@ -74,13 +76,7 @@ const TopicInput = ({
 
 const styles = StyleSheet.create({
     container: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
         backgroundColor: appBgColor,
-        zIndex: 1,
         justifyContent: "center",
         alignItems: "center",
     },

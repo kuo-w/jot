@@ -20,6 +20,24 @@ type Props = {
 
 type EntryMode = "entry" | "topic";
 
+type TrayProps = {
+    children: React.ReactNode;
+};
+
+const Tray = (props: TrayProps) => {
+    return (
+        <View
+            style={{
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+                marginBottom: 10,
+            }}
+        >
+            {props.children}
+        </View>
+    );
+};
+
 const JotScreen = ({ route, navigation }: Props) => {
     const dispatch = useDispatch();
     const [inputText, setInputText] = useState(""); // Body text.
@@ -98,13 +116,18 @@ const JotScreen = ({ route, navigation }: Props) => {
                         inputText={inputText}
                         onChangeText={setInputText}
                     ></KeyboardAvoidingTextInput>
-                    <View>
-                        <Button title="Save" onPress={() => submitJot()} />
+                    <Tray>
                         <Button
-                            title="Tags"
+                            color={appBgColor}
+                            title="Save"
+                            onPress={() => submitJot()}
+                        />
+                        <Button
+                            color={appBgColor}
+                            title="Tag"
                             onPress={() => setEntryMode("topic")}
                         />
-                    </View>
+                    </Tray>
                 </>
             )}
             {entryMode == "topic" && (
@@ -115,15 +138,21 @@ const JotScreen = ({ route, navigation }: Props) => {
                         onSubmit={onTopicSubmit}
                         onTextChange={setTopicInputText}
                         onItemPress={removeTopic}
+                        containerStyle={{ flexGrow: 1 }}
                         topics={topics}
                     ></TopicInput>
-                    <View>
-                        <Button title="Save" onPress={() => submitJot()} />
+                    <Tray>
                         <Button
+                            color={appBgColor}
+                            title="Save"
+                            onPress={() => submitJot()}
+                        />
+                        <Button
+                            color={appBgColor}
                             title="Back"
                             onPress={() => setEntryMode("entry")}
                         />
-                    </View>
+                    </Tray>
                 </>
             )}
         </View>
